@@ -1,31 +1,28 @@
 # Projeto de Sistemas Distribuídos 2015-2016 #
 
-Grupo de SD ... - Campus ...
-*(preencher com número do grupo de SD no Fénix e depois apagar esta linha)*
+Grupo de SD 03 - Campus Alameda
 
-... ... ...
+Pedro Bucho 69537 pedro.m.bucho@tecnico.ulisboa.pt
 
-... ... ...
+João Figueiredo 75741 j.andre.dias@tecnico.ulisboa.pt
 
-... ... ...
-*(preencher com nome, número e email de membro do grupo e depois apagar esta linha)*
+Miguel Amaral 78865 miguel.p.amaral@tecnico.ulisboa.pt
 
 
 Repositório:
-[tecnico-distsys/C_XX-project](https://github.com/tecnico-distsys/C_XX-project/)
+[tecnico-distsys/A_03-project](https://github.com/tecnico-distsys/A_03-project/)
 
 -------------------------------------------------------------------------------
 
 ## Instruções de instalação 
 
+!FIXME
 
 ### Ambiente
 
 [0] Iniciar sistema operativo
 
-Indicar Windows ou Linux
-*(escolher um dos dois, que esteja disponível nos laboratórios, e depois apagar esta linha)*
-
+Indicar Linux
 
 [1] Iniciar servidores de apoio
 
@@ -33,8 +30,6 @@ JUDDI:
 ```
 ...
 ```
-
-
 [2] Criar pasta temporária
 
 ```
@@ -45,18 +40,13 @@ mkdir ...
 
 [3] Obter código fonte do projeto (versão entregue)
 
-```
-git clone ... 
-```
-*(colocar aqui comandos git para obter a versão entregue a partir da tag e depois apagar esta linha)*
-
+git clone git@github.com:tecnico-distsys/A_03-project.git 
 
 [4] Instalar módulos de bibliotecas auxiliares
 
-```
+//FIXME
 cd uddi-naming
 mvn clean install
-```
 
 ```
 cd ...
