@@ -12,7 +12,7 @@ public class TransporterClientApplication {
 		System.out.println("WS NAME:  " + _wsName);
 
 		try {
-			/*TransporterClient client = new TransporterClient(_uddiURL, _wsName);
+			TransporterClient client = new TransporterClient(_uddiURL, _wsName);
 			System.out.println("PING: " + client.ping());
 
 			JobView j = client.requestJob("Lisboa", "Lisboa", 53);
@@ -23,7 +23,7 @@ public class TransporterClientApplication {
 			}
 			if(client.listJobs().size() == 0)
 				System.out.println("There are no jobs.");
-			*/
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

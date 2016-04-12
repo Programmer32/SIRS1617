@@ -112,10 +112,6 @@ public class  TransporterPort implements TransporterPortType {
 		//if(originNotFound) throw new BadLocationFault_Exception(origin, new BadLocationFault());
 		//if(destinationNotFound) throw new BadLocationFault_Exception(destination, new BadLocationFault());
 		//it's stupid if the price is an integer, and the offer is 1, I can't return a valid price lower than that
-		if(price > 100){
-			System.out.println("Price too hight");
-			return null;
-		}
 		if(price > 100 || price < 2 || destinationNotFound | originNotFound) return null;
 		
 		JobView j = new JobView();
@@ -125,13 +121,14 @@ public class  TransporterPort implements TransporterPortType {
 		j.setCompanyName(_companyName);
 		j.setJobIdentifier(newJobIdentifier(origin, destination));
 		
-		if(price < 10) j.setJobPrice(price - _random.nextInt(price));
+		if(price <= 10) j.setJobPrice(price - _random.nextInt(price - 1) + 1);
+		else 
 		if(price % 2 == 0){
-			if(_id % 2 == 0) j.setJobPrice(price - _random.nextInt(price));
-			else j.setJobPrice(price + _random.nextInt(price));
+			if(_id % 2 == 0) j.setJobPrice(price - _random.nextInt(price - 1) + 1);
+			else j.setJobPrice(price + _random.nextInt(price - 1) + 1);
 		}else{
-			if(_id % 2 == 0) j.setJobPrice(price + _random.nextInt(price));
-			else j.setJobPrice(price - _random.nextInt(price));
+			if(_id % 2 == 0) j.setJobPrice(price + _random.nextInt(price - 1) + 1);
+			else j.setJobPrice(price - _random.nextInt(price - 1) + 1);
 		}
 		
 		return j;
