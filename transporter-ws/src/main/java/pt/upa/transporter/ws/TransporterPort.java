@@ -122,15 +122,15 @@ public class  TransporterPort implements TransporterPortType {
 		j.setJobIdentifier(newJobIdentifier(origin, destination));
 		
 		if(price <= 10) j.setJobPrice(price - _random.nextInt(price - 1) + 1);
-		else 
-		if(price % 2 == 0){
-			if(_id % 2 == 0) j.setJobPrice(price - _random.nextInt(price - 1) + 1);
-			else j.setJobPrice(price + _random.nextInt(price - 1) + 1);
-		}else{
-			if(_id % 2 == 0) j.setJobPrice(price + _random.nextInt(price - 1) + 1);
-			else j.setJobPrice(price - _random.nextInt(price - 1) + 1);
+		else{ 
+			if(price % 2 == 0){
+				if(_id % 2 == 0) j.setJobPrice(price - _random.nextInt(price - 1) + 1);
+				else j.setJobPrice(price + _random.nextInt(price - 1) + 1);
+			}else{
+				if(_id % 2 == 0) j.setJobPrice(price + _random.nextInt(price - 1) + 1);
+				else j.setJobPrice(price - _random.nextInt(price - 1) + 1);
+			}
 		}
-		
 		return j;
 	}
 

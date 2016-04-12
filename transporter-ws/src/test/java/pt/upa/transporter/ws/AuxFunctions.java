@@ -11,7 +11,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
  *  Invoked by Maven in the "test" life-cycle phase
  *  If necessary, should invoke "mock" remote servers 
  */
-public class RequestJobTest {
+public class AuxFunctions {
 
 	// static members
 
@@ -216,3 +216,24 @@ public class RequestJobTest {
 		assertEquals(JobStateView.PROPOSED,state);
 	}
 }
+
+/*
+@Test
+public void jobStatusAccepted() throws BadLocationFault_Exception, BadPriceFault_Exception, BadJobFault_Exception {
+	JobView job = transporter.requestJob("Lisboa", "Lisboa", 50);
+	String id = job.getJobIdentifier();
+	//Ass
+	transporter.decideJob(id, true);
+	job = transporter.jobStatus(id);
+	JobStateView state  = job.getJobState();
+	assertEquals(state,JobStateView.ACCEPTED);
+}
+*/
+/*
+    PROPOSED,
+    REJECTED,
+    ACCEPTED,
+    HEADING,
+    ONGOING,
+    COMPLETED;
+ */
