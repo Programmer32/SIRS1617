@@ -1,6 +1,8 @@
 package pt.upa.transporter.ws;
 
 import java.util.List;
+import java.util.Random;
+
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
@@ -26,13 +28,18 @@ public class  TransporterPort implements TransporterPortType {
 	private static final String[] CENTRO = { "Lisboa", "Leiria", "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda" };
 	private static final String[] SUL = { "Setúbal", "Évora", "Portalegre", "Beja", "Faro" };
 	
+	private int _numberOfJobs;
 	private ListJobsResponse _jobs;
 	private int _id;
-	
-	public TransporterPort(){ id(0); clearJobs(); }
+	private String _companyName;
+	Random _random;
+	public TransporterPort(){ _numberOfJobs = 0; companyName("NoName"); id(0); clearJobs(); _random = new Random(); }
 	
 	public void id(int id){ _id = id; }
-	
+	public void companyName(String companyName){ _companyName = companyName; }
+	public String newJobIdentifier(String origin, String destination){
+		return _companyName + origin + destination + new Integer(_numberOfJobs++).toString();
+	}
 	/**
 	 * 
 	 * @param name
@@ -77,8 +84,56 @@ public class  TransporterPort implements TransporterPortType {
 			int price)
 					throws BadLocationFault_Exception, BadPriceFault_Exception
 	{
-		//TODO
-		return null;
+		System.out.println("Job requested");
+		boolean originNotFound = true; 
+		boolean destinationNotFound = true; 
+		if(_id % 2 == 0){
+			//Even transporters
+			for(String s : TransporterPort.NORTE){
+				if(s.equals(origin)) originNotFound = false;
+				if(s.equals(destination)) destinationNotFound = false;
+			}
+			for(String s : TransporterPort.CENTRO){
+				if(s.equals(origin)) originNotFound = false;
+				if(s.equals(destination)) destinationNotFound = false;
+			}
+		}else{
+			//Odd transporters
+			for(String s : TransporterPort.CENTRO){
+				if(s.equals(origin)) originNotFound = false;
+				if(s.equals(destination)) destinationNotFound = false;
+			}
+			for(String s : TransporterPort.SUL){
+				if(s.equals(origin)) originNotFound = false;
+				if(s.equals(destination)) destinationNotFound = false;
+			}
+		}
+		//if(originNotFound) throw new BadLocationFault_Exception(origin, new BadLocationFault());
+		//if(destinationNotFound) throw new BadLocationFault_Exception(destination, new BadLocationFault());
+		//it's stupid if the price is an integer, and the offer is 1, I can't return a valid price lower than that
+		if(price > 100){
+			System.out.println("Price too hight");
+			return null;
+		}
+		if(price > 100 || price < 2 || destinationNotFound | originNotFound) return null;
+		
+		JobView j = new JobView();
+		_jobs.getReturn().add(j);
+		j.setJobOrigin(origin);
+		j.setJobDestination(destination);
+		j.setCompanyName(_companyName);
+		j.setJobIdentifier(newJobIdentifier(origin, destination));
+		
+		if(price < 10) j.setJobPrice(price - _random.nextInt(price));
+		if(price % 2 == 0){
+			if(_id % 2 == 0) j.setJobPrice(price - _random.nextInt(price));
+			else j.setJobPrice(price + _random.nextInt(price));
+		}else{
+			if(_id % 2 == 0) j.setJobPrice(price + _random.nextInt(price));
+			else j.setJobPrice(price - _random.nextInt(price));
+		}
+		
+		return j;
 	}
 
 	/**
@@ -103,7 +158,11 @@ public class  TransporterPort implements TransporterPortType {
 			boolean accept)
 					throws BadJobFault_Exception
 	{
-		//TODO
+		for(JobView job : _jobs.getReturn())
+			if(job.getJobIdentifier().equals(id)){
+				job.setJobState((accept) ? JobStateView.ACCEPTED : JobStateView.REJECTED);
+				return job;
+			}
 		return null;
 	}
 

@@ -25,6 +25,7 @@ public class TransporterMain {
 		try {
 			TransporterPort t = new TransporterPort();
 			t.id(Integer.parseInt(id));
+			t.companyName(name);
 			endpoint = Endpoint.create(t);
 
 			// publish endpoint
