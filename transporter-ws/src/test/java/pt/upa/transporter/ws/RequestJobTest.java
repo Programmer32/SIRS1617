@@ -45,11 +45,113 @@ public class RequestJobTest {
 
 	// tests
 
+	/* ********************************************************************** */
+	/* **************************** JobPrice ******************************** */
+	
+	/*FIXME: Par e impar?*/
 	@Test
-	public void test() {
+	public void refPriceOver100() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		assertNull(transporter.requestJob("Lisboa", "Lisboa", 101));
+	}
+	
+	/*FIXME: Par e impar?*/
+	@Test
+	public void refPriceEquals10() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		JobView job = transporter.requestJob("Lisboa", "Lisboa", 10);
+		int price = job.getJobPrice();
+		boolean cond = price < 10;
+		assert(cond);
+	}
+	
+	@Test
+	public void refPriceEquals9() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		JobView job = transporter.requestJob("Lisboa", "Lisboa", 9);
+		int price = job.getJobPrice();
+		boolean cond = price < 9;
+		assert(cond);
+	}
+	
+	@Test
+	public void refPriceEquals2() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		JobView job = transporter.requestJob("Lisboa", "Lisboa", 2);
+		int price = job.getJobPrice();
+		boolean cond = price < 2;
+		assert(cond);
+	}
 
-		// assertEquals(expected, actual);
-		// if the assert fails, the test fails
+	@Test
+	public void refPriceEquals1() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		assertNull(transporter.requestJob("Lisboa", "Lisboa", 1));
+	}
+	
+	@Test
+	public void refPriceEquals100Par() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		transporter.id(0);
+		JobView job = transporter.requestJob("Lisboa", "Lisboa", 100);
+		int price = job.getJobPrice();
+		boolean cond = price < 100;
+		assert(cond);
+	}
+	@Test
+	public void refPriceEquals100Impar() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		transporter.id(1);
+		JobView job = transporter.requestJob("Lisboa", "Lisboa", 100);
+		int price = job.getJobPrice();
+		boolean cond = price > 100;
+		assert(cond);
+	}
+	
+	@Test
+	public void refPriceEquals11par() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		transporter.id(0);
+		JobView job = transporter.requestJob("Lisboa", "Lisboa", 11);
+		int price = job.getJobPrice();
+		boolean cond = price > 11;
+		assert(cond);
+	}
+	
+	@Test
+	public void refPriceEquals11Impar() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		transporter.id(1);
+		JobView job = transporter.requestJob("Lisboa", "Lisboa", 11);
+		int price = job.getJobPrice();
+		boolean cond = price < 11;
+		assert(cond);
+	}
+	
+	@Test
+	public void refPriceEquals50par() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		transporter.id(0);
+		JobView job = transporter.requestJob("Lisboa", "Lisboa", 50);
+		int price = job.getJobPrice();
+		boolean cond = price < 50;
+		assert(cond);
+	}
+	
+	@Test
+	public void refPriceEquals50Impar() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		transporter.id(1);
+		JobView job = transporter.requestJob("Lisboa", "Lisboa", 50);
+		int price = job.getJobPrice();
+		boolean cond = price > 50;
+		assert(cond);
+	}
+	@Test
+	public void refPriceEquals51par() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		transporter.id(0);
+		JobView job = transporter.requestJob("Lisboa", "Lisboa", 51);
+		int price = job.getJobPrice();
+		boolean cond = price > 51;
+		assert(cond);
+	}
+	
+	@Test
+	public void refPriceEquals51Impar() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		transporter.id(1);
+		JobView job = transporter.requestJob("Lisboa", "Lisboa", 51);
+		int price = job.getJobPrice();
+		boolean cond = price < 51;
+		assert(cond);
 	}
 
 }
