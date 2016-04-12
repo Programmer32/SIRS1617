@@ -16,7 +16,7 @@ import org.junit.Test;
  *  Invoked by Maven in the "test" life-cycle phase
  *  If necessary, should invoke "mock" remote servers 
  */
-public class JobStatus {
+public class JobStatusTest {
 
 	// static members
 
