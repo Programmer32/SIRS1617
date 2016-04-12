@@ -1,16 +1,24 @@
 
 package pt.upa.broker.ws;
 
+import java.util.Collection;
 import java.util.List;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
 import javax.xml.bind.annotation.XmlSeeAlso;
+import javax.xml.registry.JAXRException;
 import javax.xml.ws.Action;
+import javax.xml.ws.BindingProvider;
+import javax.xml.ws.Endpoint;
 import javax.xml.ws.FaultAction;
 import javax.xml.ws.RequestWrapper;
 import javax.xml.ws.ResponseWrapper;
+
+import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+import pt.upa.transporter.ws.TransporterService;
+import pt.upa.transporter.ws.cli.TransporterClient;
 
 
 /**
@@ -25,6 +33,11 @@ import javax.xml.ws.ResponseWrapper;
 })
 public class BrokerPort implements BrokerPortType {
 
+	private String _uddiURL;
+	
+	public BrokerPort(String uddiURL){
+		_uddiURL = uddiURL;
+	}
 
     /**
      * 
@@ -40,7 +53,22 @@ public class BrokerPort implements BrokerPortType {
     public String ping(
         @WebParam(name = "name", targetNamespace = "")
         String name){
-    	return new String("PING: " + name);
+		String result = new String("PING!\n");
+    	try {
+    		UDDINaming uddiNaming = new UDDINaming(_uddiURL);
+    		Collection<String> endpoints = uddiNaming.list("UpaTransporter%");
+    		if(endpoints.size() == 0) result += "There are no transporters available\n";
+    		else result += "There " + ((endpoints.size() == 1) ? "is " : "are ") + endpoints.size() + " transporters available\n";
+    		if(endpoints != null) for(String endpoint : endpoints){
+				System.out.println("ENDPOINT: " + endpoint);
+				//TransporterClient client = new TransporterClient(endpoint);
+				//result += client.ping() + "\n";
+			}
+		} catch (JAXRException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	return result;
     }
 
     /**

@@ -12,8 +12,9 @@ public class BrokerClientApplication {
 		System.out.println("WS NAME:  " + _wsName);
 		try {
 			BrokerClient client = new BrokerClient(_uddiURL, _wsName);
+			System.out.println("PING: " + client.ping("BrokerApp"));
+
 			/*TransporterClient client = new TransporterClient(_uddiURL, _wsName);
-			System.out.println("PING: " + client.ping());
 
 			JobView j = client.requestJob("Lisboa", "Lisboa", 53);
 			if(j == null) System.out.println("No job returned");

@@ -24,7 +24,7 @@ public class BrokerMain {
 		Endpoint endpoint = null;
 		UDDINaming uddiNaming = null;
 		try {
-			BrokerPort t = new BrokerPort();
+			BrokerPort t = new BrokerPort(uddiURL);
 			endpoint = Endpoint.create(t);
 
 			// publish endpoint

@@ -55,7 +55,7 @@ public class  TransporterPort implements TransporterPortType {
 	public String ping(
 			@WebParam(name = "name", targetNamespace = "")
 			String name){
-		return new String("PING " + name);
+		return new String("PING " + _companyName);
 	}
 
 	/**
@@ -119,6 +119,7 @@ public class  TransporterPort implements TransporterPortType {
 		j.setJobOrigin(origin);
 		j.setJobDestination(destination);
 		j.setCompanyName(_companyName);
+		j.setJobState(JobStateView.PROPOSED);
 		j.setJobIdentifier(newJobIdentifier(origin, destination));
 		
 		if(price <= 10) j.setJobPrice(price - _random.nextInt(price - 1) + 1);

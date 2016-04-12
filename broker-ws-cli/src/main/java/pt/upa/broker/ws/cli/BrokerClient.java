@@ -42,4 +42,8 @@ public class BrokerClient {
 		requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
 				endpointAddress);
 	}
+	
+	public String ping(String name){
+		return _port.ping(name);
+	}
 }

@@ -48,15 +48,5 @@ public class TransporterClientTest {
 
     // Test the data received from server like origin, destination.
     @Test
-    public void test1(){
-    	try {
-    		TransporterClient client = new TransporterClient("http://localhost:9090","UpaTransporter1");
-        	JobView j = client.requestJob("Leiria", "Lisboa", 40);
-        	assertEquals("Leiria",j.getJobOrigin());
-        	assertEquals("Lisboa",j.getJobDestination());
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-    }
+    public void test1(){}
 }

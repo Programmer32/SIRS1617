@@ -17,10 +17,22 @@ public class TransporterClient {
 
 	private String _uddiURL;
 	private String _wsName;
+	private String _endpoint;
 	private TransporterService _client;
 	private TransporterPortType _port;
 	private BindingProvider _bindingProvider;
-	
+	public TransporterClient(String endpoint){
+
+		_endpoint = endpoint;
+		_client = new TransporterService();
+		_port = _client.getTransporterPort();
+
+		_bindingProvider = (BindingProvider) _port;
+		Map<String, Object> requestContext = _bindingProvider
+				.getRequestContext();
+		requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
+				_endpoint);
+	}
 	public TransporterClient(String uddiURL, String wsName) throws JAXRException {
 		_uddiURL = uddiURL;
 		_wsName = wsName;
@@ -30,13 +42,13 @@ public class TransporterClient {
 	public void establishConnection() throws JAXRException{
 		UDDINaming uddiNaming = new UDDINaming(_uddiURL);
 		
-		String endpointAddress = uddiNaming.lookup(_wsName);
+		_endpoint = uddiNaming.lookup(_wsName);
 
-		if (endpointAddress == null){
+		if (_endpoint == null){
 			System.out.println("Not found!");
 			return; //Should throw exception
 		}else{
-			System.out.printf("Found %s%n", endpointAddress);
+			System.out.printf("Found %s%n", _endpoint);
 		}
 
 		_client = new TransporterService();
@@ -46,7 +58,7 @@ public class TransporterClient {
 		Map<String, Object> requestContext = _bindingProvider
 				.getRequestContext();
 		requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
-				endpointAddress);
+				_endpoint);
 	}
 	
 	public String ping(){
