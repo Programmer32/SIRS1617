@@ -50,24 +50,5 @@ public class JobStatus {
 	}
 
 	// tests
-	@Test
-	public void listJobs() throws BadLocationFault_Exception, BadPriceFault_Exception{
-		transporter.requestJob("Lisboa", "Lisboa", 50);
-		transporter.requestJob("Lisboa", "Lisboa", 50);
-		transporter.requestJob("Lisboa", "Lisboa", 50);
-		
-		ArrayList<JobView> lista = (ArrayList<JobView>) transporter.listJobs();
-		assertEquals(3,lista.size());
-	}
-	@Test
-	public void clearJobs() throws BadLocationFault_Exception, BadPriceFault_Exception{
-		transporter.requestJob("Lisboa", "Lisboa", 50);
-		transporter.requestJob("Lisboa", "Lisboa", 50);
-		transporter.requestJob("Lisboa", "Lisboa", 50);
-		
-		transporter.clearJobs();
-		
-		ArrayList<JobView> lista = (ArrayList<JobView>) transporter.listJobs();
-		assertEquals(0,lista.size());
-	}
+
 }
