@@ -20,6 +20,7 @@ public class TransporterClient {
 	private TransporterService _client;
 	private TransporterPortType _port;
 	private BindingProvider _bindingProvider;
+	
 	public TransporterClient(String uddiURL, String wsName) throws JAXRException {
 		_uddiURL = uddiURL;
 		_wsName = wsName;

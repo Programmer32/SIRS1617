@@ -40,6 +40,7 @@ public class  TransporterPort implements TransporterPortType {
 	public String newJobIdentifier(String origin, String destination){
 		return _companyName + origin + destination + new Integer(_numberOfJobs++).toString();
 	}
+	
 	/**
 	 * 
 	 * @param name

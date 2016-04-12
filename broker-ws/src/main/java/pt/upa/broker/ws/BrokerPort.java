@@ -23,7 +23,7 @@ import javax.xml.ws.ResponseWrapper;
 @XmlSeeAlso({
     ObjectFactory.class
 })
-public class BrokerPort {
+public class BrokerPort implements BrokerPortType {
 
 
     /**
@@ -40,7 +40,7 @@ public class BrokerPort {
     public String ping(
         @WebParam(name = "name", targetNamespace = "")
         String name){
-    	return new String("");
+    	return new String("PING: " + name);
     }
 
     /**
@@ -73,7 +73,10 @@ public class BrokerPort {
         @WebParam(name = "price", targetNamespace = "")
         int price)
         throws InvalidPriceFault_Exception, UnavailableTransportFault_Exception, UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception
-    ;
+    {
+    	//TODO
+    	return new String();
+    }
 
     /**
      * 
@@ -92,8 +95,10 @@ public class BrokerPort {
     public TransportView viewTransport(
         @WebParam(name = "id", targetNamespace = "")
         String id)
-        throws UnknownTransportFault_Exception
-    ;
+        throws UnknownTransportFault_Exception{
+    	//TODO
+    	return null;
+    }
 
     /**
      * 
@@ -105,7 +110,10 @@ public class BrokerPort {
     @RequestWrapper(localName = "listTransports", targetNamespace = "http://ws.broker.upa.pt/", className = "pt.upa.broker.ws.ListTransports")
     @ResponseWrapper(localName = "listTransportsResponse", targetNamespace = "http://ws.broker.upa.pt/", className = "pt.upa.broker.ws.ListTransportsResponse")
     @Action(input = "http://ws.broker.upa.pt/BrokerPort/listTransportsRequest", output = "http://ws.broker.upa.pt/BrokerPort/listTransportsResponse")
-    public List<TransportView> listTransports();
+    public List<TransportView> listTransports(){
+    	//TODO
+    	return null;
+    }
 
     /**
      * 
@@ -114,6 +122,8 @@ public class BrokerPort {
     @RequestWrapper(localName = "clearTransports", targetNamespace = "http://ws.broker.upa.pt/", className = "pt.upa.broker.ws.ClearTransports")
     @ResponseWrapper(localName = "clearTransportsResponse", targetNamespace = "http://ws.broker.upa.pt/", className = "pt.upa.broker.ws.ClearTransportsResponse")
     @Action(input = "http://ws.broker.upa.pt/BrokerPort/clearTransportsRequest", output = "http://ws.broker.upa.pt/BrokerPort/clearTransportsResponse")
-    public void clearTransports();
+    public void clearTransports(){
+    	//TODO
+    }
 
 }
