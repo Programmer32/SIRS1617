@@ -1,4 +1,3 @@
-
 package pt.upa.transporter.ws;
 
 import java.util.List;
@@ -20,12 +19,20 @@ import javax.xml.ws.ResponseWrapper;
  * 
  */
 @WebService(name = "TransporterPortType", targetNamespace = "http://ws.transporter.upa.pt/")
-@XmlSeeAlso({
-		ObjectFactory.class
-		})
+@XmlSeeAlso({ObjectFactory.class})
 public class  TransporterPort implements TransporterPortType {
-
-
+	
+	private static final String[] NORTE = { "Porto", "Braga", "Viana do Castelo", "Vila Real", "Bragança" };
+	private static final String[] CENTRO = { "Lisboa", "Leiria", "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda" };
+	private static final String[] SUL = { "Setúbal", "Évora", "Portalegre", "Beja", "Faro" };
+	
+	private ListJobsResponse _jobs;
+	private int _id;
+	
+	public TransporterPort(){ id(0); clearJobs(); }
+	
+	public void id(int id){ _id = id; }
+	
 	/**
 	 * 
 	 * @param name
@@ -33,16 +40,15 @@ public class  TransporterPort implements TransporterPortType {
 	 *     returns java.lang.String
 	 */
 	@WebMethod
-		@WebResult(targetNamespace = "")
-		@RequestWrapper(localName = "ping", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.Ping")
-		@ResponseWrapper(localName = "pingResponse", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.PingResponse")
-		@Action(input = "http://ws.transporter.upa.pt/TransporterPort/pingRequest", output = "http://ws.transporter.upa.pt/TransporterPort/pingResponse")
-		public String ping(
-				@WebParam(name = "name", targetNamespace = "")
-				String name){
-			//TODO
-			return new String();
-		}
+	@WebResult(targetNamespace = "")
+	@RequestWrapper(localName = "ping", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.Ping")
+	@ResponseWrapper(localName = "pingResponse", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.PingResponse")
+	@Action(input = "http://ws.transporter.upa.pt/TransporterPort/pingRequest", output = "http://ws.transporter.upa.pt/TransporterPort/pingResponse")
+	public String ping(
+			@WebParam(name = "name", targetNamespace = "")
+			String name){
+		return new String("PING " + name);
+	}
 
 	/**
 	 * 
@@ -55,13 +61,13 @@ public class  TransporterPort implements TransporterPortType {
 	 * @throws BadPriceFault_Exception
 	 */
 	@WebMethod
-		@WebResult(targetNamespace = "")
-		@RequestWrapper(localName = "requestJob", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.RequestJob")
-		@ResponseWrapper(localName = "requestJobResponse", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.RequestJobResponse")
-		@Action(input = "http://ws.transporter.upa.pt/TransporterPort/requestJobRequest", output = "http://ws.transporter.upa.pt/TransporterPort/requestJobResponse", fault = {
-				@FaultAction(className = BadLocationFault_Exception.class, value = "http://ws.transporter.upa.pt/TransporterPort/requestJob/Fault/BadLocationFault"),
-				@FaultAction(className = BadPriceFault_Exception.class, value = "http://ws.transporter.upa.pt/TransporterPort/requestJob/Fault/BadPriceFault")
-				})
+	@WebResult(targetNamespace = "")
+	@RequestWrapper(localName = "requestJob", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.RequestJob")
+	@ResponseWrapper(localName = "requestJobResponse", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.RequestJobResponse")
+	@Action(input = "http://ws.transporter.upa.pt/TransporterPort/requestJobRequest", output = "http://ws.transporter.upa.pt/TransporterPort/requestJobResponse", fault = {
+			@FaultAction(className = BadLocationFault_Exception.class, value = "http://ws.transporter.upa.pt/TransporterPort/requestJob/Fault/BadLocationFault"),
+			@FaultAction(className = BadPriceFault_Exception.class, value = "http://ws.transporter.upa.pt/TransporterPort/requestJob/Fault/BadPriceFault")
+	})
 	public JobView requestJob(
 			@WebParam(name = "origin", targetNamespace = "")
 			String origin,
@@ -69,11 +75,9 @@ public class  TransporterPort implements TransporterPortType {
 			String destination,
 			@WebParam(name = "price", targetNamespace = "")
 			int price)
-		throws BadLocationFault_Exception, BadPriceFault_Exception
-		{
+					throws BadLocationFault_Exception, BadPriceFault_Exception
+	{
 		//TODO
-		//FIXME
-		//XXX
 		return null;
 	}
 
@@ -86,32 +90,22 @@ public class  TransporterPort implements TransporterPortType {
 	 * @throws BadJobFault_Exception
 	 */
 	@WebMethod
-		@WebResult(targetNamespace = "")
-		@RequestWrapper(localName = "decideJob", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.DecideJob")
-		@ResponseWrapper(localName = "decideJobResponse", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.DecideJobResponse")
-		@Action(input = "http://ws.transporter.upa.pt/TransporterPort/decideJobRequest", output = "http://ws.transporter.upa.pt/TransporterPort/decideJobResponse", fault = {
-				@FaultAction(className = BadJobFault_Exception.class, value = "http://ws.transporter.upa.pt/TransporterPort/decideJob/Fault/BadJobFault")
-				})
+	@WebResult(targetNamespace = "")
+	@RequestWrapper(localName = "decideJob", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.DecideJob")
+	@ResponseWrapper(localName = "decideJobResponse", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.DecideJobResponse")
+	@Action(input = "http://ws.transporter.upa.pt/TransporterPort/decideJobRequest", output = "http://ws.transporter.upa.pt/TransporterPort/decideJobResponse", fault = {
+			@FaultAction(className = BadJobFault_Exception.class, value = "http://ws.transporter.upa.pt/TransporterPort/decideJob/Fault/BadJobFault")
+	})
 	public JobView decideJob(
 			@WebParam(name = "id", targetNamespace = "")
 			String id,
 			@WebParam(name = "accept", targetNamespace = "")
 			boolean accept)
-		throws BadJobFault_Exception
-		{
+					throws BadJobFault_Exception
+	{
 		//TODO
-		//TODO
-		//TODO
-		//TODO
-		//TODO
-		//TODO
-		//TODO
-		//TODO
-		//TODO
-		//FIXME
-		//XXX
 		return null;
-		}
+	}
 
 	/**
 	 * 
@@ -120,16 +114,26 @@ public class  TransporterPort implements TransporterPortType {
 	 *     returns pt.upa.transporter.ws.JobView
 	 */
 	@WebMethod
-		@WebResult(targetNamespace = "")
-		@RequestWrapper(localName = "jobStatus", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.JobStatus")
-		@ResponseWrapper(localName = "jobStatusResponse", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.JobStatusResponse")
-		@Action(input = "http://ws.transporter.upa.pt/TransporterPort/jobStatusRequest", output = "http://ws.transporter.upa.pt/TransporterPort/jobStatusResponse")
-		public JobView jobStatus(
-				@WebParam(name = "id", targetNamespace = "")
-				String id){
-			//TODO
-			return null;
-		}
+	@WebResult(targetNamespace = "")
+	@RequestWrapper(localName = "jobStatus", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.JobStatus")
+	@ResponseWrapper(localName = "jobStatusResponse", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.JobStatusResponse")
+	@Action(input = "http://ws.transporter.upa.pt/TransporterPort/jobStatusRequest", output = "http://ws.transporter.upa.pt/TransporterPort/jobStatusResponse")
+	public JobView jobStatus(
+			@WebParam(name = "id", targetNamespace = "")
+			String id){
+		for(JobView job : _jobs.getReturn())
+			if(job.getJobIdentifier().equals(id)){
+				JobView status = new ObjectFactory().createJobView();
+				status.setCompanyName(job.getCompanyName());
+				status.setJobDestination(job.getJobDestination());
+				status.setJobIdentifier(job.getJobIdentifier());
+				status.setJobOrigin(job.getJobOrigin());
+				status.setJobPrice(job.getJobPrice());
+				status.setJobState(job.getJobState());
+				return status;
+			}
+		return null;
+	}
 
 	/**
 	 * 
@@ -137,24 +141,34 @@ public class  TransporterPort implements TransporterPortType {
 	 *     returns java.util.List<pt.upa.transporter.ws.JobView>
 	 */
 	@WebMethod
-		@WebResult(targetNamespace = "")
-		@RequestWrapper(localName = "listJobs", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.ListJobs")
-		@ResponseWrapper(localName = "listJobsResponse", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.ListJobsResponse")
-		@Action(input = "http://ws.transporter.upa.pt/TransporterPort/listJobsRequest", output = "http://ws.transporter.upa.pt/TransporterPort/listJobsResponse")
-		public List<JobView> listJobs(){
-			//TODO
-			return null;
+	@WebResult(targetNamespace = "")
+	@RequestWrapper(localName = "listJobs", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.ListJobs")
+	@ResponseWrapper(localName = "listJobsResponse", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.ListJobsResponse")
+	@Action(input = "http://ws.transporter.upa.pt/TransporterPort/listJobsRequest", output = "http://ws.transporter.upa.pt/TransporterPort/listJobsResponse")
+	public List<JobView> listJobs(){
+		ListJobsResponse response = new ObjectFactory().createListJobsResponse();
+		for(JobView job : _jobs.getReturn()){
+			JobView status = new ObjectFactory().createJobView();
+			status.setCompanyName(job.getCompanyName());
+			status.setJobDestination(job.getJobDestination());
+			status.setJobIdentifier(job.getJobIdentifier());
+			status.setJobOrigin(job.getJobOrigin());
+			status.setJobPrice(job.getJobPrice());
+			status.setJobState(job.getJobState());
+			response.getReturn().add(status);
 		}
+		return response.getReturn();
+	}
 
 	/**
 	 * 
 	 */
 	@WebMethod
-		@RequestWrapper(localName = "clearJobs", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.ClearJobs")
-		@ResponseWrapper(localName = "clearJobsResponse", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.ClearJobsResponse")
-		@Action(input = "http://ws.transporter.upa.pt/TransporterPort/clearJobsRequest", output = "http://ws.transporter.upa.pt/TransporterPort/clearJobsResponse")
-		public void clearJobs(){
-			//TODO
-		}
+	@RequestWrapper(localName = "clearJobs", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.ClearJobs")
+	@ResponseWrapper(localName = "clearJobsResponse", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.ClearJobsResponse")
+	@Action(input = "http://ws.transporter.upa.pt/TransporterPort/clearJobsRequest", output = "http://ws.transporter.upa.pt/TransporterPort/clearJobsResponse")
+	public void clearJobs(){
+		_jobs = new ObjectFactory().createListJobsResponse();
+	}
 
 }

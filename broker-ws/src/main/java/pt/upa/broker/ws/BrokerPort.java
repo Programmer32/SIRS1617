@@ -23,7 +23,7 @@ import javax.xml.ws.ResponseWrapper;
 @XmlSeeAlso({
     ObjectFactory.class
 })
-public interface BrokerPortType {
+public class BrokerPort {
 
 
     /**
@@ -39,7 +39,9 @@ public interface BrokerPortType {
     @Action(input = "http://ws.broker.upa.pt/BrokerPort/pingRequest", output = "http://ws.broker.upa.pt/BrokerPort/pingResponse")
     public String ping(
         @WebParam(name = "name", targetNamespace = "")
-        String name);
+        String name){
+    	return new String("");
+    }
 
     /**
      * 
