@@ -6,6 +6,8 @@ import java.util.Map;
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.BindingProvider;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+import pt.upa.transporter.ws.BadLocationFault_Exception;
+import pt.upa.transporter.ws.BadPriceFault_Exception;
 import pt.upa.transporter.ws.JobStatus;
 import pt.upa.transporter.ws.JobView;
 import pt.upa.transporter.ws.TransporterPortType;
@@ -18,6 +20,7 @@ public class TransporterClient {
 	private TransporterService _client;
 	private TransporterPortType _port;
 	private BindingProvider _bindingProvider;
+	
 	public TransporterClient(String uddiURL, String wsName) throws JAXRException {
 		_uddiURL = uddiURL;
 		_wsName = wsName;
@@ -54,5 +57,8 @@ public class TransporterClient {
 	}	
 	public List<JobView> listJobs(){
 		return _port.listJobs();
+	}
+	public JobView requestJob(String origin, String destination, int price) throws BadLocationFault_Exception, BadPriceFault_Exception{
+		return _port.requestJob(origin, destination, price);
 	}
 }

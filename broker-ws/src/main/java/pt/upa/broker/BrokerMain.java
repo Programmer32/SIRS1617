@@ -1,31 +1,30 @@
-package pt.upa.transporter;
-import pt.upa.transporter.ws.TransporterPort;
-import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+package pt.upa.broker;
+
 import javax.xml.ws.Endpoint;
 
-public class TransporterMain {
+import pt.upa.broker.ws.BrokerPort;
+import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+
+public class BrokerMain {
 
 	public static void main(String[] args) throws Exception {
-		System.out.println(TransporterMain.class.getSimpleName() + " starting...");
+		System.out.println(BrokerMain.class.getSimpleName() + " starting...");
 
 		// Check arguments
 		if (args.length < 3) {
 			System.err.println("Argument(s) missing!");
-			System.err.printf("Usage: java %s uddiURL wsName wsURL%n", TransporterMain.class.getName());
+			System.err.printf("Usage: java %s uddiURL wsName wsURL%n", BrokerMain.class.getName());
 			return;
 		}
 
 		String uddiURL = args[0];
 		String name = args[1];
 		String url = args[2];
-		String id = args[3];
 		
 		Endpoint endpoint = null;
 		UDDINaming uddiNaming = null;
 		try {
-			TransporterPort t = new TransporterPort();
-			t.id(Integer.parseInt(id));
-			t.companyName(name);
+			BrokerPort t = new BrokerPort();
 			endpoint = Endpoint.create(t);
 
 			// publish endpoint
@@ -70,4 +69,3 @@ public class TransporterMain {
 	}
 
 }
-

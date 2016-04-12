@@ -8,7 +8,7 @@
         your c (campus) with a (Alameda) / t (Tagus); and 
         your group number with two digits.
         Then delete this comment. -->
-    <groupId>pt.upa.cxx</groupId>
+    <groupId>pt.upa.c03</groupId>
     <artifactId>broker-ws</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -25,7 +25,7 @@
         <wsdl.directory>src/main/resources</wsdl.directory>
         <wsdl.filename>broker.1_0.wsdl</wsdl.filename>
 
-        <mainclass>pt.upa.broker.BrokerApplication</mainclass>
+        <mainclass>pt.upa.broker.BrokerMain</mainclass>
 
         <ws.url>http://localhost:8080/broker-ws/endpoint</ws.url>
 
@@ -54,6 +54,11 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+           <dependency>
+        <groupId>pt.ulisboa.tecnico.sdis</groupId>
+        <artifactId>uddi-naming</artifactId>
+        <version>1.0</version>
+    </dependency>
     </dependencies>
 
     <build>
