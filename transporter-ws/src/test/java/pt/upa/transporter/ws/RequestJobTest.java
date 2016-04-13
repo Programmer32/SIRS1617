@@ -52,7 +52,7 @@ public class RequestJobTest {
 	/* **************************** JobPrice ******************************** */
 
 	/*FIXME: Par e impar?*/
-	@Test
+	@Test(expected = BadPriceFault_Exception.class)
 	public void refPriceOver100() throws BadLocationFault_Exception, BadPriceFault_Exception {
 		assertNull(transporter.requestJob("Lisboa", "Lisboa", 101));
 	}
@@ -79,7 +79,7 @@ public class RequestJobTest {
 		boolean cond = price < 2;
 		assert(cond);
 	}
-	@Test
+	@Test(expected = BadPriceFault_Exception.class)
 	public void refPriceMinor2() throws BadLocationFault_Exception, BadPriceFault_Exception {
 		assertNull(transporter.requestJob("Lisboa", "Lisboa", 1));
 	}
@@ -152,37 +152,37 @@ public class RequestJobTest {
 
 	/* **************************** JobPrice ******************************** */
 	/* ********************************************************************** */
-	@Test
+	@Test(expected = BadLocationFault_Exception.class)
 	public void outOfBoundsOriginImpar() throws BadLocationFault_Exception, BadPriceFault_Exception{
 		transporter.id(1);
 		assertNull(transporter.requestJob("Porto", "Setúbal", 51));
 	}
-	@Test
+	@Test(expected = BadLocationFault_Exception.class)
 	public void outOfBoundsDestinationImpar() throws BadLocationFault_Exception, BadPriceFault_Exception{
 		transporter.id(1);
 		assertNull(transporter.requestJob("Setúbal", "Porto", 51));
 	}
-	@Test
+	@Test(expected = BadLocationFault_Exception.class)
 	public void outOfBoundsOriginPar() throws BadLocationFault_Exception, BadPriceFault_Exception{
 		transporter.id(0);
 		assertNull(transporter.requestJob("Setúbal","Porto", 51));
 	}
-	@Test
+	@Test(expected = BadLocationFault_Exception.class)
 	public void outOfBoundsDestinationPar() throws BadLocationFault_Exception, BadPriceFault_Exception{
 		transporter.id(0);
 		assertNull(transporter.requestJob("Porto","Setúbal", 51));
 	}
-	@Test
+	@Test(expected = BadLocationFault_Exception.class)
 	public void unknownDestination() throws BadLocationFault_Exception, BadPriceFault_Exception{
 		transporter.id(0);
 		assertNull(transporter.requestJob("Lisboa","ola", 51));
 	}
-	@Test
+	@Test(expected = BadLocationFault_Exception.class)
 	public void unknownOrigin() throws BadLocationFault_Exception, BadPriceFault_Exception{
 		transporter.id(0);
 		assertNull(transporter.requestJob("","Lisboa", 51));
 	}
-	@Test
+	@Test(expected = BadLocationFault_Exception.class)
 	public void nullOrigin() throws BadLocationFault_Exception, BadPriceFault_Exception{
 		transporter.id(0);
 		assertNull(transporter.requestJob(null,"Lisboa", 51));

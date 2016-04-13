@@ -74,12 +74,12 @@ public class DecideJobTest {
 		assertEquals(JobStateView.REJECTED,state);
 	}
 
-	@Test
+	@Test(expected = BadJobFault_Exception.class)
 	public void nullId() throws BadLocationFault_Exception, BadPriceFault_Exception, BadJobFault_Exception {
 		assertNull(transporter.decideJob(null, false));
 	}
 
-	@Test
+	@Test(expected = BadJobFault_Exception.class)
 	public void wrongId() throws BadLocationFault_Exception, BadPriceFault_Exception, BadJobFault_Exception {
 		assertNull(transporter.decideJob(id+"ola", false));
 	}
