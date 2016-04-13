@@ -32,12 +32,12 @@ public class  TransporterPort implements TransporterPortType {
 	private ListJobsResponse _jobs;
 	private int _id;
 	private String _companyName;
-	Random _random;
+	private Random _random;
 	public TransporterPort(){ _numberOfJobs = 0; companyName("NoName"); id(0); clearJobs(); _random = new Random(); }
 	
 	public void id(int id){ _id = id; }
 	public void companyName(String companyName){ _companyName = companyName; }
-	public String newJobIdentifier(String origin, String destination){
+	private String newJobIdentifier(String origin, String destination){
 		return _companyName + origin + destination + new Integer(_numberOfJobs++).toString();
 	}
 	
@@ -55,7 +55,7 @@ public class  TransporterPort implements TransporterPortType {
 	public String ping(
 			@WebParam(name = "name", targetNamespace = "")
 			String name){
-		return new String("PING " + _companyName);
+		return new String(_companyName  + " is online\n");
 	}
 
 	/**
@@ -86,8 +86,42 @@ public class  TransporterPort implements TransporterPortType {
 					throws BadLocationFault_Exception, BadPriceFault_Exception
 	{
 		System.out.println("Job requested");
+		if(price > 100){
+			System.out.println("Price is too high: " + price);
+			throw new BadPriceFault_Exception("Price is too high", new BadPriceFault());
+		}
+		if(price < 2){
+			System.out.println("Price is too low: " + price);
+			throw new BadPriceFault_Exception("Price is too low", new BadPriceFault());
+		}
+		
 		boolean originNotFound = true; 
-		boolean destinationNotFound = true; 
+		boolean destinationNotFound = true;
+		
+		//Checks if Location is known
+		for(String s : TransporterPort.NORTE){
+			if(s.equals(origin)) originNotFound = false;
+			if(s.equals(destination)) destinationNotFound = false;
+		}
+		for(String s : TransporterPort.CENTRO){
+			if(s.equals(origin)) originNotFound = false;
+			if(s.equals(destination)) destinationNotFound = false;
+		}
+		for(String s : TransporterPort.CENTRO){
+			if(s.equals(origin)) originNotFound = false;
+			if(s.equals(destination)) destinationNotFound = false;
+		}
+		if(originNotFound){
+			System.out.println("Origin location not found on database: " + origin);
+			throw new BadLocationFault_Exception("Origin unknown", new BadLocationFault());
+		}
+		if(destinationNotFound){
+			System.out.println("Destination location not found on database: " + destination);
+			throw new BadLocationFault_Exception("Destination unknown", new BadLocationFault());
+		}
+
+		originNotFound = true; 
+		destinationNotFound = true;
 		if(_id % 2 == 0){
 			//Even transporters
 			for(String s : TransporterPort.NORTE){
@@ -109,10 +143,12 @@ public class  TransporterPort implements TransporterPortType {
 				if(s.equals(destination)) destinationNotFound = false;
 			}
 		}
-		//if(originNotFound) throw new BadLocationFault_Exception(origin, new BadLocationFault());
-		//if(destinationNotFound) throw new BadLocationFault_Exception(destination, new BadLocationFault());
-		//it's stupid if the price is an integer, and the offer is 1, I can't return a valid price lower than that
-		if(price > 100 || price < 2 || destinationNotFound | originNotFound) return null;
+		if(originNotFound){
+			throw new BadLocationFault_Exception("Transporter does not provide service for this origin: " + destination, new BadLocationFault());
+		}
+		if(destinationNotFound){
+			throw new BadLocationFault_Exception("Transporter does not provide service for this destination: " + destination, new BadLocationFault());
+		}
 		
 		JobView j = new JobView();
 		_jobs.getReturn().add(j);
@@ -123,7 +159,7 @@ public class  TransporterPort implements TransporterPortType {
 		j.setJobIdentifier(newJobIdentifier(origin, destination));
 		
 		if(price <= 10) j.setJobPrice(price - (_random.nextInt(price - 1) + 1));
-		else{ 
+		else{
 			if(price % 2 == 0){
 				if(_id % 2 == 0) j.setJobPrice(price - (_random.nextInt(price - 1) + 1));
 				else j.setJobPrice(price + (_random.nextInt(price - 1) + 1));
@@ -162,7 +198,7 @@ public class  TransporterPort implements TransporterPortType {
 				job.setJobState((accept) ? JobStateView.ACCEPTED : JobStateView.REJECTED);
 				return job;
 			}
-		return null;
+		throw new BadJobFault_Exception("Identifier job has not been found on database", new BadJobFault());
 	}
 
 	/**

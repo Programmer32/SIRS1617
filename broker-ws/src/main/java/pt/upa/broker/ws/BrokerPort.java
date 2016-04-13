@@ -1,8 +1,13 @@
 
 package pt.upa.broker.ws;
-
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
@@ -10,14 +15,16 @@ import javax.jws.WebService;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.Action;
-import javax.xml.ws.BindingProvider;
-import javax.xml.ws.Endpoint;
 import javax.xml.ws.FaultAction;
 import javax.xml.ws.RequestWrapper;
 import javax.xml.ws.ResponseWrapper;
 
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
-import pt.upa.transporter.ws.TransporterService;
+import pt.upa.transporter.ws.BadJobFault_Exception;
+import pt.upa.transporter.ws.BadLocationFault_Exception;
+import pt.upa.transporter.ws.BadPriceFault_Exception;
+import pt.upa.transporter.ws.JobStateView;
+import pt.upa.transporter.ws.JobView;
 import pt.upa.transporter.ws.cli.TransporterClient;
 
 
@@ -33,12 +40,60 @@ import pt.upa.transporter.ws.cli.TransporterClient;
 })
 public class BrokerPort implements BrokerPortType {
 
-	private String _uddiURL;
+	private static final String[] NORTE = { "Porto", "Braga", "Viana do Castelo", "Vila Real", "Bragança" };
+	private static final String[] CENTRO = { "Lisboa", "Leiria", "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda" };
+	private static final String[] SUL = { "Setúbal", "Évora", "Portalegre", "Beja", "Faro" };
 	
-	public BrokerPort(String uddiURL){
+	private String _uddiURL;
+	private UDDINaming _uddiNaming;
+	private Map<String, TransportView> _transports;
+	
+	public BrokerPort(String uddiURL) throws JAXRException{
 		_uddiURL = uddiURL;
+		_uddiNaming = new UDDINaming(_uddiURL);
+		clearTransports();
 	}
-
+	
+	private TransporterClient transporter(String companyName) throws JAXRException{
+		String endpoint = _uddiNaming.lookup(companyName);
+		if(endpoint != null){
+			try{
+				TransporterClient client = new TransporterClient(endpoint);
+				System.out.println("ENDPOINT: " + endpoint + "\nPING: " + client.ping());
+				System.out.println();
+				System.out.println("Client found and valid");
+				return client;
+			}catch(Exception e){
+				System.out.println("Client found and invalid");
+				System.out.println("Connection refused");			
+			}
+		}
+		return null;
+	}
+	private Map<String, TransporterClient> transporters(){
+		Map<String, TransporterClient> clients = new HashMap<String, TransporterClient>();
+		try {
+			Collection<String> endpoints = _uddiNaming.list("UpaTransporter%");
+			if(endpoints != null){
+				for(String endpoint : endpoints){
+					try{
+						TransporterClient client = new TransporterClient(endpoint);
+						System.out.println("ENDPOINT: " + endpoint + "\nPING: " + client.ping());
+						System.out.println();
+						clients.put(endpoint,client);
+						System.out.println("Client found and valid");
+					}catch(Exception e){
+						System.out.println("Client found and invalid");
+						System.out.println("Connection refused");
+					}
+				}
+			}
+		} catch (JAXRException e) {
+			e.printStackTrace();
+		}
+		return clients;		
+	}
+	
     /**
      * 
      * @param name
@@ -54,20 +109,11 @@ public class BrokerPort implements BrokerPortType {
         @WebParam(name = "name", targetNamespace = "")
         String name){
 		String result = new String("PING!\n");
-    	try {
-    		UDDINaming uddiNaming = new UDDINaming(_uddiURL);
-    		Collection<String> endpoints = uddiNaming.list("UpaTransporter%");
-    		if(endpoints.size() == 0) result += "There are no transporters available\n";
-    		else result += "There " + ((endpoints.size() == 1) ? "is " : "are ") + endpoints.size() + " transporters available\n";
-    		if(endpoints != null) for(String endpoint : endpoints){
-				System.out.println("ENDPOINT: " + endpoint);
-				//TransporterClient client = new TransporterClient(endpoint);
-				//result += client.ping() + "\n";
-			}
-		} catch (JAXRException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		Map<String, TransporterClient> transporters = transporters();
+		System.out.println("SIZE OF TRANSPORTERS:" + transporters.size());
+    	for(TransporterClient client : transporters.values()){
+    		result += client.ping();
+    	}
     	return result;
     }
 
@@ -102,8 +148,105 @@ public class BrokerPort implements BrokerPortType {
         int price)
         throws InvalidPriceFault_Exception, UnavailableTransportFault_Exception, UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception
     {
-    	//TODO
-    	return new String();
+    	if(price < 0) throw new InvalidPriceFault_Exception("Price lower than zero: " + price, new InvalidPriceFault());
+		
+    	boolean originNotFound = true; 
+		boolean destinationNotFound = true;
+		
+		for(String s : BrokerPort.NORTE){
+			if(s.equals(origin)) originNotFound = false;
+			if(s.equals(destination)) destinationNotFound = false;
+		}
+		for(String s : BrokerPort.CENTRO){
+			if(s.equals(origin)) originNotFound = false;
+			if(s.equals(destination)) destinationNotFound = false;
+		}
+		for(String s : BrokerPort.SUL){
+			if(s.equals(origin)) originNotFound = false;
+			if(s.equals(destination)) destinationNotFound = false;
+		}
+		
+		if(destinationNotFound) throw new UnknownLocationFault_Exception("Destination unknown: " + destination, new UnknownLocationFault());
+		if(originNotFound) throw new UnknownLocationFault_Exception("Origin unknown: " + origin, new UnknownLocationFault());
+    	
+		//in this moment the origin destination and price is valid
+		//so we will look for an offer in the transporters
+		
+		//Init TransportView
+		TransportView transport = new TransportView();
+		transport.setState(TransportStateView.REQUESTED);
+		transport.setOrigin(origin);
+		transport.setDestination(destination);
+		
+		//Get all transporters available
+		Map<String, TransporterClient> transporters = transporters();
+		List<JobView> offers = new ArrayList<JobView>();
+		List<JobView> offersSorted = new ArrayList<JobView>();
+		
+		//Get all offers from all transporters
+		for(TransporterClient client : transporters.values()){
+    		JobView j;
+			try {
+				j = client.requestJob(origin, destination, price);
+			} catch (BadLocationFault_Exception | BadPriceFault_Exception e) {
+				continue;
+			}
+    		if(j == null) continue;
+    		offers.add(j);
+    	}
+		
+		if(offers.size() == 0)
+			throw new UnavailableTransportFault_Exception("There is no transporter available for this travel",
+				new UnavailableTransportFault());
+		
+		//Sort offers by price
+		Collections.sort(offersSorted, new Comparator<JobView>(){
+			public int compare(JobView j1, JobView j2){
+				return j1.getJobPrice() - j2.getJobPrice();
+			}
+		});
+		
+		boolean accepted = false;
+		for(JobView j : offersSorted){
+	    	JobView returnJobView;
+			try {
+				returnJobView = transporter(j.getCompanyName()).decideJob(j.getJobIdentifier(), true);
+				if(returnJobView == null) continue; //FIXME
+		    	
+		    	if(returnJobView.getJobState() == JobStateView.ACCEPTED){
+		    		j.setJobState(JobStateView.ACCEPTED);
+		    		transport.setTransporterCompany(j.getCompanyName());
+		    		transport.setPrice(j.getJobPrice());
+		    		transport.setId(j.getJobIdentifier());
+		        	_transports.put(transport.getId(), transport);
+		        	accepted = true;
+		    	}
+			} catch (BadJobFault_Exception | JAXRException e) {
+				// TODO Auto-generated catch block
+				//e.printStackTrace();
+			}
+
+	    	
+		}
+				
+		//For all the other reject the job
+		for(JobView j : offersSorted){
+			if(j.getJobState() != JobStateView.ACCEPTED)
+				try {
+					transporter(j.getCompanyName()).decideJob(j.getJobIdentifier(), false);
+				} catch (BadJobFault_Exception | JAXRException e) {
+					// TODO Auto-generated catch block
+					//FIXME need to check return and retry if return is null
+					//e.printStackTrace();
+				}
+		}
+
+		if(!accepted){
+			return null;
+		}
+    	return transport.getId();
+		
+    	
     }
 
     /**
@@ -124,8 +267,25 @@ public class BrokerPort implements BrokerPortType {
         @WebParam(name = "id", targetNamespace = "")
         String id)
         throws UnknownTransportFault_Exception{
-    	//TODO
-    	return null;
+    	
+    	TransportView transport = _transports.get(id);
+    	if(transport == null) return null;
+    	if(!transport.getState().value().equals("HEADING") &&
+    			!transport.getState().value().equals("COMPLETED") &&
+    			!transport.getState().value().equals("ONGOING")){
+    		return transport;
+    	}
+    	
+    	//Need to update job state from transporters info
+    	try {
+			TransporterClient client = transporter(transport.getTransporterCompany());
+			JobView job = client.jobStatus(id);
+			transport.setState(TransportStateView.fromValue(job.getJobState().value()));
+			return transport;
+		} catch (JAXRException e) {
+			e.printStackTrace();
+			return null;
+		}
     }
 
     /**
@@ -139,8 +299,7 @@ public class BrokerPort implements BrokerPortType {
     @ResponseWrapper(localName = "listTransportsResponse", targetNamespace = "http://ws.broker.upa.pt/", className = "pt.upa.broker.ws.ListTransportsResponse")
     @Action(input = "http://ws.broker.upa.pt/BrokerPort/listTransportsRequest", output = "http://ws.broker.upa.pt/BrokerPort/listTransportsResponse")
     public List<TransportView> listTransports(){
-    	//TODO
-    	return null;
+    	return new ArrayList<TransportView>(_transports.values());
     }
 
     /**
@@ -151,7 +310,9 @@ public class BrokerPort implements BrokerPortType {
     @ResponseWrapper(localName = "clearTransportsResponse", targetNamespace = "http://ws.broker.upa.pt/", className = "pt.upa.broker.ws.ClearTransportsResponse")
     @Action(input = "http://ws.broker.upa.pt/BrokerPort/clearTransportsRequest", output = "http://ws.broker.upa.pt/BrokerPort/clearTransportsResponse")
     public void clearTransports(){
-    	//TODO
+    	System.out.println("[BROKERPORT] clearTransports: cleaning transport list");
+		_transports = new HashMap<String, TransportView>();
+    	System.out.println("[BROKERPORT] clearTransports: transport list clean");
     }
 
 }
