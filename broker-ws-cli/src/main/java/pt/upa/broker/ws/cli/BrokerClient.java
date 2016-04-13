@@ -1,5 +1,6 @@
 package pt.upa.broker.ws.cli;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.registry.JAXRException;
@@ -7,6 +8,12 @@ import javax.xml.ws.BindingProvider;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.broker.ws.BrokerPortType;
 import pt.upa.broker.ws.BrokerService;
+import pt.upa.broker.ws.InvalidPriceFault_Exception;
+import pt.upa.broker.ws.TransportView;
+import pt.upa.broker.ws.UnavailableTransportFault_Exception;
+import pt.upa.broker.ws.UnavailableTransportPriceFault_Exception;
+import pt.upa.broker.ws.UnknownLocationFault_Exception;
+import pt.upa.broker.ws.UnknownTransportFault_Exception;
 
 public class BrokerClient {
 	
@@ -45,5 +52,19 @@ public class BrokerClient {
 	
 	public String ping(String name){
 		return _port.ping(name);
+	}
+	
+	public String requestTransport(String origin, String destination, int price) throws InvalidPriceFault_Exception, UnavailableTransportFault_Exception, UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception{
+		return _port.requestTransport(origin, destination, price);
+	}
+	
+	public TransportView viewTransport(String id) throws UnknownTransportFault_Exception{
+		return _port.viewTransport(id);
+	}
+	public List<TransportView> listTransports(){
+		return _port.listTransports();
+	}
+	public void clearTransports(){
+		_port.clearTransports();
 	}
 }

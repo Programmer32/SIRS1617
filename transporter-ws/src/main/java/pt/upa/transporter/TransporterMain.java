@@ -66,7 +66,6 @@ public class TransporterMain {
 				System.out.printf("Caught exception when deleting: %s%n", e);
 			}
 		}
-
 	}
 
 }

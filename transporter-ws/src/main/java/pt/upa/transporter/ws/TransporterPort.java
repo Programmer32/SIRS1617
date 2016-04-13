@@ -2,11 +2,14 @@ package pt.upa.transporter.ws;
 
 import java.util.List;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
+import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.ws.Action;
 import javax.xml.ws.FaultAction;
@@ -40,6 +43,7 @@ public class  TransporterPort implements TransporterPortType {
 	private String newJobIdentifier(String origin, String destination){
 		return _companyName + origin + destination + new Integer(_numberOfJobs++).toString();
 	}
+	
 	
 	/**
 	 * 
@@ -168,6 +172,9 @@ public class  TransporterPort implements TransporterPortType {
 				else j.setJobPrice(price - (_random.nextInt(price - 1) + 1));
 			}
 		}
+		System.out.println("[JOB] CompanyName: " + j.getCompanyName() + " ID: " +
+				j.getJobIdentifier() + " Origin: " + j.getJobOrigin() + " Destination: " + 
+				j.getJobDestination() + " Price: " + j.getJobPrice() + " Estado: " + j.getJobState().value());
 		return j;
 	}
 
@@ -195,7 +202,14 @@ public class  TransporterPort implements TransporterPortType {
 	{
 		for(JobView job : _jobs.getReturn())
 			if(job.getJobIdentifier().equals(id)){
-				job.setJobState((accept) ? JobStateView.ACCEPTED : JobStateView.REJECTED);
+				if(accept){
+					job.setJobState(JobStateView.ACCEPTED);
+					Timer timer = new Timer();
+					TimerTask task = new ChangeStatus(job);
+					timer.schedule(task, _random.nextInt(5000));
+				}else{
+					job.setJobState(JobStateView.REJECTED);
+				}
 				return job;
 			}
 		throw new BadJobFault_Exception("Identifier job has not been found on database", new BadJobFault());
@@ -265,4 +279,25 @@ public class  TransporterPort implements TransporterPortType {
 		_jobs = new ObjectFactory().createListJobsResponse();
 	}
 
+	private class ChangeStatus extends TimerTask{
+		private JobView _j;
+		protected ChangeStatus(JobView j){ _j = j; }
+		@Override
+		public void run() {
+			if(_j.getJobState() == JobStateView.ACCEPTED){
+				_j.setJobState(JobStateView.HEADING);
+			}else if(_j.getJobState() == JobStateView.HEADING){
+				_j.setJobState(JobStateView.ONGOING);
+			}else if(_j.getJobState() == JobStateView.ONGOING){
+				_j.setJobState(JobStateView.COMPLETED);
+			}
+			if(_j.getJobState() != JobStateView.COMPLETED){
+				Timer timer = new Timer();
+				TimerTask task = new ChangeStatus(_j);
+				timer.schedule(task, _random.nextInt(5000) + 5000);
+			}
+		}
+		
+		
+	}
 }
