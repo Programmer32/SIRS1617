@@ -1,15 +1,10 @@
 package pt.upa.transporter.ws;
 
 import java.util.List;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
 import javax.jws.WebService;
-import javax.xml.bind.annotation.XmlSchemaType;
 import javax.xml.bind.annotation.XmlSeeAlso;
 import javax.xml.ws.Action;
 import javax.xml.ws.FaultAction;
@@ -27,24 +22,6 @@ import javax.xml.ws.ResponseWrapper;
 @XmlSeeAlso({ObjectFactory.class})
 public class  TransporterPort implements TransporterPortType {
 	
-	private static final String[] NORTE = { "Porto", "Braga", "Viana do Castelo", "Vila Real", "Bragança" };
-	private static final String[] CENTRO = { "Lisboa", "Leiria", "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda" };
-	private static final String[] SUL = { "Setúbal", "Évora", "Portalegre", "Beja", "Faro" };
-	
-	private int _numberOfJobs;
-	private ListJobsResponse _jobs;
-	private int _id;
-	private String _companyName;
-	private Random _random;
-	public TransporterPort(){ _numberOfJobs = 0; companyName("NoName"); id(0); clearJobs(); _random = new Random(); }
-	
-	public void id(int id){ _id = id; }
-	public void companyName(String companyName){ _companyName = companyName; }
-	private String newJobIdentifier(String origin, String destination){
-		return _companyName + origin + destination + new Integer(_numberOfJobs++).toString();
-	}
-	
-	
 	/**
 	 * 
 	 * @param name
@@ -58,9 +35,7 @@ public class  TransporterPort implements TransporterPortType {
 	@Action(input = "http://ws.transporter.upa.pt/TransporterPort/pingRequest", output = "http://ws.transporter.upa.pt/TransporterPort/pingResponse")
 	public String ping(
 			@WebParam(name = "name", targetNamespace = "")
-			String name){
-		return new String(_companyName  + " is online\n");
-	}
+			String name){ return TransporterManager.getInstance().ping(name); }
 
 	/**
 	 * 
@@ -87,96 +62,8 @@ public class  TransporterPort implements TransporterPortType {
 			String destination,
 			@WebParam(name = "price", targetNamespace = "")
 			int price)
-					throws BadLocationFault_Exception, BadPriceFault_Exception
-	{
-		System.out.println("Job requested");
-		if(price > 100){
-			System.out.println("Price is too high: " + price);
-			throw new BadPriceFault_Exception("Price is too high", new BadPriceFault());
-		}
-		if(price < 2){
-			System.out.println("Price is too low: " + price);
-			throw new BadPriceFault_Exception("Price is too low", new BadPriceFault());
-		}
-		
-		boolean originNotFound = true; 
-		boolean destinationNotFound = true;
-		
-		//Checks if Location is known
-		for(String s : TransporterPort.NORTE){
-			if(s.equals(origin)) originNotFound = false;
-			if(s.equals(destination)) destinationNotFound = false;
-		}
-		for(String s : TransporterPort.CENTRO){
-			if(s.equals(origin)) originNotFound = false;
-			if(s.equals(destination)) destinationNotFound = false;
-		}
-		for(String s : TransporterPort.CENTRO){
-			if(s.equals(origin)) originNotFound = false;
-			if(s.equals(destination)) destinationNotFound = false;
-		}
-		if(originNotFound){
-			System.out.println("Origin location not found on database: " + origin);
-			throw new BadLocationFault_Exception("Origin unknown", new BadLocationFault());
-		}
-		if(destinationNotFound){
-			System.out.println("Destination location not found on database: " + destination);
-			throw new BadLocationFault_Exception("Destination unknown", new BadLocationFault());
-		}
-
-		originNotFound = true; 
-		destinationNotFound = true;
-		if(_id % 2 == 0){
-			//Even transporters
-			for(String s : TransporterPort.NORTE){
-				if(s.equals(origin)) originNotFound = false;
-				if(s.equals(destination)) destinationNotFound = false;
-			}
-			for(String s : TransporterPort.CENTRO){
-				if(s.equals(origin)) originNotFound = false;
-				if(s.equals(destination)) destinationNotFound = false;
-			}
-		}else{
-			//Odd transporters
-			for(String s : TransporterPort.CENTRO){
-				if(s.equals(origin)) originNotFound = false;
-				if(s.equals(destination)) destinationNotFound = false;
-			}
-			for(String s : TransporterPort.SUL){
-				if(s.equals(origin)) originNotFound = false;
-				if(s.equals(destination)) destinationNotFound = false;
-			}
-		}
-		if(originNotFound){
-			throw new BadLocationFault_Exception("Transporter does not provide service for this origin: " + destination, new BadLocationFault());
-		}
-		if(destinationNotFound){
-			throw new BadLocationFault_Exception("Transporter does not provide service for this destination: " + destination, new BadLocationFault());
-		}
-		
-		JobView j = new JobView();
-		_jobs.getReturn().add(j);
-		j.setJobOrigin(origin);
-		j.setJobDestination(destination);
-		j.setCompanyName(_companyName);
-		j.setJobState(JobStateView.PROPOSED);
-		j.setJobIdentifier(newJobIdentifier(origin, destination));
-		
-		if(price <= 10) j.setJobPrice(price - (_random.nextInt(price - 1) + 1));
-		else{
-			if(price % 2 == 0){
-				if(_id % 2 == 0) j.setJobPrice(price - (_random.nextInt(price - 1) + 1));
-				else j.setJobPrice(price + (_random.nextInt(price - 1) + 1));
-			}else{
-				if(_id % 2 == 0) j.setJobPrice(price + (_random.nextInt(price - 1) + 1));
-				else j.setJobPrice(price - (_random.nextInt(price - 1) + 1));
-			}
-		}
-		System.out.println("[JOB] CompanyName: " + j.getCompanyName() + " ID: " +
-				j.getJobIdentifier() + " Origin: " + j.getJobOrigin() + " Destination: " + 
-				j.getJobDestination() + " Price: " + j.getJobPrice() + " Estado: " + j.getJobState().value());
-		return j;
-	}
+					throws BadLocationFault_Exception, BadPriceFault_Exception{
+		return TransporterManager.getInstance().requestJob(origin, destination, price); }
 
 	/**
 	 * 
@@ -199,21 +86,7 @@ public class  TransporterPort implements TransporterPortType {
 			@WebParam(name = "accept", targetNamespace = "")
 			boolean accept)
 					throws BadJobFault_Exception
-	{
-		for(JobView job : _jobs.getReturn())
-			if(job.getJobIdentifier().equals(id)){
-				if(accept){
-					job.setJobState(JobStateView.ACCEPTED);
-					Timer timer = new Timer();
-					TimerTask task = new ChangeStatus(job);
-					timer.schedule(task, _random.nextInt(5000));
-				}else{
-					job.setJobState(JobStateView.REJECTED);
-				}
-				return job;
-			}
-		throw new BadJobFault_Exception("Identifier job has not been found on database", new BadJobFault());
-	}
+	{ return TransporterManager.getInstance().decideJob(id, accept); }
 
 	/**
 	 * 
@@ -229,18 +102,7 @@ public class  TransporterPort implements TransporterPortType {
 	public JobView jobStatus(
 			@WebParam(name = "id", targetNamespace = "")
 			String id){
-		for(JobView job : _jobs.getReturn())
-			if(job.getJobIdentifier().equals(id)){
-				JobView status = new ObjectFactory().createJobView();
-				status.setCompanyName(job.getCompanyName());
-				status.setJobDestination(job.getJobDestination());
-				status.setJobIdentifier(job.getJobIdentifier());
-				status.setJobOrigin(job.getJobOrigin());
-				status.setJobPrice(job.getJobPrice());
-				status.setJobState(job.getJobState());
-				return status;
-			}
-		return null;
+		return TransporterManager.getInstance().jobStatus(id);
 	}
 
 	/**
@@ -253,20 +115,7 @@ public class  TransporterPort implements TransporterPortType {
 	@RequestWrapper(localName = "listJobs", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.ListJobs")
 	@ResponseWrapper(localName = "listJobsResponse", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.ListJobsResponse")
 	@Action(input = "http://ws.transporter.upa.pt/TransporterPort/listJobsRequest", output = "http://ws.transporter.upa.pt/TransporterPort/listJobsResponse")
-	public List<JobView> listJobs(){
-		ListJobsResponse response = new ObjectFactory().createListJobsResponse();
-		for(JobView job : _jobs.getReturn()){
-			JobView status = new ObjectFactory().createJobView();
-			status.setCompanyName(job.getCompanyName());
-			status.setJobDestination(job.getJobDestination());
-			status.setJobIdentifier(job.getJobIdentifier());
-			status.setJobOrigin(job.getJobOrigin());
-			status.setJobPrice(job.getJobPrice());
-			status.setJobState(job.getJobState());
-			response.getReturn().add(status);
-		}
-		return response.getReturn();
-	}
+	public List<JobView> listJobs(){ return TransporterManager.getInstance().listJobs(); }
 
 	/**
 	 * 
@@ -276,28 +125,6 @@ public class  TransporterPort implements TransporterPortType {
 	@ResponseWrapper(localName = "clearJobsResponse", targetNamespace = "http://ws.transporter.upa.pt/", className = "pt.upa.transporter.ws.ClearJobsResponse")
 	@Action(input = "http://ws.transporter.upa.pt/TransporterPort/clearJobsRequest", output = "http://ws.transporter.upa.pt/TransporterPort/clearJobsResponse")
 	public void clearJobs(){
-		_jobs = new ObjectFactory().createListJobsResponse();
-	}
-
-	private class ChangeStatus extends TimerTask{
-		private JobView _j;
-		protected ChangeStatus(JobView j){ _j = j; }
-		@Override
-		public void run() {
-			if(_j.getJobState() == JobStateView.ACCEPTED){
-				_j.setJobState(JobStateView.HEADING);
-			}else if(_j.getJobState() == JobStateView.HEADING){
-				_j.setJobState(JobStateView.ONGOING);
-			}else if(_j.getJobState() == JobStateView.ONGOING){
-				_j.setJobState(JobStateView.COMPLETED);
-			}
-			if(_j.getJobState() != JobStateView.COMPLETED){
-				Timer timer = new Timer();
-				TimerTask task = new ChangeStatus(_j);
-				timer.schedule(task, _random.nextInt(5000) + 5000);
-			}
-		}
-		
-		
+		TransporterManager.getInstance().clearJobs();
 	}
 }

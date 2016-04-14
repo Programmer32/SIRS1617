@@ -51,11 +51,8 @@ public class Dialog {
 		if(i*2 != length - method.length()) print(" ");
 		print(" ] " + message);
 		println("");
-		
 	}
-	public void debug(String s){
-		if(Dialog._debug) System.out.println(s);
-	}
+	public void debug(String s){ if(Dialog._debug) System.out.println(s); }
 
 
 	public int readInteger(){ return Dialog._input.nextInt(); }
@@ -81,7 +78,10 @@ public class Dialog {
 	public String readLine(String s){ print(s); return readLine(); }
 	public BigInteger readBigInteger(String s){ print(s); return readBigInteger(); }
 	
-	
+	public void clearLine(){
+		print(String.format("\033[%dA",1));
+		print("\033[2K");
+	}
 	public void print(String s){ System.out.print(s); }
 	public void println(String s){ print(s); System.out.println(); }
 }

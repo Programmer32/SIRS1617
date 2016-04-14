@@ -30,7 +30,7 @@ public class DecideJobTest {
 
 
 	// members
-	TransporterPort transporter;
+	TransporterManager transporter;
 	JobView job;
 	String id;
 	
@@ -39,7 +39,7 @@ public class DecideJobTest {
 	@Before
 	public void setUp() {
 		try {
-			transporter = new TransporterPort();
+			transporter = TransporterManager.getInstance();
 			job = transporter.requestJob("Lisboa", "Lisboa", 50);
 			id = job.getJobIdentifier();
 		} catch (BadLocationFault_Exception | BadPriceFault_Exception e) {
@@ -49,8 +49,9 @@ public class DecideJobTest {
 
 	@After
 	public void tearDown() {
-		transporter = null;
+		transporter.clearJobs();
 		job = null;
+		id = null;
 	}
 
 

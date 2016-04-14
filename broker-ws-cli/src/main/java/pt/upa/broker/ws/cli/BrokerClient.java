@@ -14,6 +14,7 @@ import pt.upa.broker.ws.UnavailableTransportFault_Exception;
 import pt.upa.broker.ws.UnavailableTransportPriceFault_Exception;
 import pt.upa.broker.ws.UnknownLocationFault_Exception;
 import pt.upa.broker.ws.UnknownTransportFault_Exception;
+import pt.upa.ui.Dialog;
 
 public class BrokerClient {
 	
@@ -28,6 +29,23 @@ public class BrokerClient {
 		_wsName = wsName;
 		establishConnection();
 	}
+	public BrokerClient(String endpointAddress){
+		Dialog.IO().debug("BrokerClient", "Creating a BrokerClient " + endpointAddress);
+		if (endpointAddress == null){
+			Dialog.IO().debug("BrokerClient", "Null endpoint received");
+			return; //Should throw exception
+		}
+
+		_client = new BrokerService();
+		_port = _client.getBrokerPort();
+
+		_bindingProvider = (BindingProvider) _port;
+		Map<String, Object> requestContext = _bindingProvider
+				.getRequestContext();
+		requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
+				endpointAddress);
+	}
+	
 	public void establishConnection() throws JAXRException{
 		UDDINaming uddiNaming = new UDDINaming(_uddiURL);
 		

@@ -37,7 +37,9 @@ public class BrokerClientApplication {
 		            	}
 		            	break;
 		            case "list":
+		            	boolean end = true;
 		            	List<TransportView> list = client.listTransports();
+		            	
 		            	if(list.size() == 0){
 		            		Dialog.IO().println("There is no transport records on UPA");
 		            		break;
@@ -49,34 +51,52 @@ public class BrokerClientApplication {
 		            					   " Price     |" +
 		            					   " TransporterCompany |" + 
 		            					   " Estado da Viagem");
-		            	for(TransportView transport : list){
-		            		System.out.print(" " + transport.getId());
-		            		for(int i = 1 + transport.getId().length(); i < 50; i++)
-		            			System.out.print(" ");
-		            		System.out.print("|");
-
-		            		System.out.print(" " + transport.getOrigin());
-		            		for(int i = 1 + transport.getOrigin().length(); i < 25; i++)
-		            			System.out.print(" ");
-		            		System.out.print("|");
-		            		System.out.print(" " + transport.getDestination());
-		            		for(int i = 1 + transport.getDestination().length(); i < 25; i++)
-		            			System.out.print(" ");
-		            		System.out.print("|");
-		            		
-		            		String price = transport.getPrice().toString();
-		            		System.out.print(" " + price);
-		            		for(int i = 1 + price.length(); i < 11; i++)
-		            			System.out.print(" ");
-		            		System.out.print("|");
-		            		
-		            		System.out.print(" " + transport.getTransporterCompany());
-		            		for(int i = 1 + transport.getTransporterCompany().length(); i < 20; i++)
-		            			System.out.print(" ");
-		            		System.out.print("|");
-		            		
-		            		System.out.println(" " + transport.getState().value());
-		            	}
+		            	int round = 0;
+		            	do{
+		            		end = true;
+			            	list = client.listTransports();
+			            	
+			            	if(list.size() == 0){
+			            		Dialog.IO().println("There is no transport records on UPA");
+			            		break;
+			            	}
+			            	if(round != 0)
+			            		for(TransportView transport : list)
+			            			Dialog.IO().clearLine();
+			            	
+			            	for(TransportView transport : list){
+			            		System.out.print(" " + transport.getId());
+			            		for(int i = 1 + transport.getId().length(); i < 50; i++)
+			            			System.out.print(" ");
+			            		System.out.print("|");
+	
+			            		System.out.print(" " + transport.getOrigin());
+			            		for(int i = 1 + transport.getOrigin().length(); i < 25; i++)
+			            			System.out.print(" ");
+			            		System.out.print("|");
+			            		System.out.print(" " + transport.getDestination());
+			            		for(int i = 1 + transport.getDestination().length(); i < 25; i++)
+			            			System.out.print(" ");
+			            		System.out.print("|");
+			            		
+			            		String price = transport.getPrice().toString();
+			            		System.out.print(" " + price);
+			            		for(int i = 1 + price.length(); i < 11; i++)
+			            			System.out.print(" ");
+			            		System.out.print("|");
+			            		
+			            		System.out.print(" " + transport.getTransporterCompany());
+			            		for(int i = 1 + transport.getTransporterCompany().length(); i < 20; i++)
+			            			System.out.print(" ");
+			            		System.out.print("|");
+			            		
+			            		if(!transport.getState().value().equals("COMPLETED") && !transport.getState().value().equals("FAILED")){
+			            			end = false;
+			            		}
+			            		
+			            		System.out.println(" " + transport.getState().value());
+			            	}
+		            	}while(!end);
 		            	break;
 		            case "view":
 		            	TransportView transport = client.viewTransport(input.next());

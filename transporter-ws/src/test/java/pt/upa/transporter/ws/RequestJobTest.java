@@ -14,7 +14,7 @@ import javax.xml.bind.annotation.XmlSchemaType;
 public class RequestJobTest {
 
 	// static members
-
+	private TransporterManager transporter;
 
 	// one-time initialization and clean-up
 
@@ -27,61 +27,81 @@ public class RequestJobTest {
 	public static void oneTimeTearDown() {
 
 	}
-
-
+	
 	// members
-	TransporterPort transporter;
 
-	// initialization and clean-up for each test
+	// Initialisation and clean-up for each test
 
 	@Before
 	public void setUp() {
-		transporter = new TransporterPort();
+		transporter = TransporterManager.getInstance();
 	}
 
 	@After
 	public void tearDown() {
-		transporter = null;
+		transporter.clearJobs();
 	}
 
 
-	// tests
+	@Test(expected = BadLocationFault_Exception.class)
+	public void nullParamsTest() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		assertNull(transporter.requestJob(null, null, 0));
+	}
+	@Test(expected = BadLocationFault_Exception.class)
+	public void nullOriginTest() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		assertNull(transporter.requestJob(null, "Lisboa", 0));
+	}
+	@Test(expected = BadLocationFault_Exception.class)
+	public void nullDestinationTest() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		assertNull(transporter.requestJob("Lisboa", null, 0));
+	}
+	@Test(expected = BadLocationFault_Exception.class)
+	public void UnknownOriginTest() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		assertNull(transporter.requestJob("Madrid", "Lisboa", 0));
+	}
+	@Test(expected = BadLocationFault_Exception.class)
+	public void UnknownDestinationTest() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		assertNull(transporter.requestJob("Lisboa", "Madrid", 0));
+	}
 
-
-	/* ********************************************************************** */
-	/* **************************** JobPrice ******************************** */
-
-	/*FIXME: Par e impar?*/
 	@Test(expected = BadPriceFault_Exception.class)
-	public void refPriceOver100() throws BadLocationFault_Exception, BadPriceFault_Exception {
-		assertNull(transporter.requestJob("Lisboa", "Lisboa", 101));
+	public void negativePriceTest() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		assertNull(transporter.requestJob("Lisboa", "Lisboa", -1));
 	}
-
-	/*FIXME: Par e impar?*/
 	@Test
-	public void refPriceEquals10() throws BadLocationFault_Exception, BadPriceFault_Exception {
+	public void overPricedTest() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		assertNull(transporter.requestJob("Lisboa", "Lisboa", 100 + 1));
+	}
+	@Test
+	public void price10Test() throws BadLocationFault_Exception, BadPriceFault_Exception {
 		JobView job = transporter.requestJob("Lisboa", "Lisboa", 10);
 		int price = job.getJobPrice();
 		boolean cond = price < 10;
 		assert(cond);
 	}
 	@Test
-	public void refPriceEquals9() throws BadLocationFault_Exception, BadPriceFault_Exception {
+	public void price9Test() throws BadLocationFault_Exception, BadPriceFault_Exception {
 		JobView job = transporter.requestJob("Lisboa", "Lisboa", 9);
 		int price = job.getJobPrice();
 		boolean cond = price < 9;
 		assert(cond);
 	}	
 	@Test
-	public void refPriceEquals2() throws BadLocationFault_Exception, BadPriceFault_Exception {
+	public void price2Test() throws BadLocationFault_Exception, BadPriceFault_Exception {
 		JobView job = transporter.requestJob("Lisboa", "Lisboa", 2);
 		int price = job.getJobPrice();
 		boolean cond = price < 2;
 		assert(cond);
 	}
 	@Test(expected = BadPriceFault_Exception.class)
-	public void refPriceMinor2() throws BadLocationFault_Exception, BadPriceFault_Exception {
-		assertNull(transporter.requestJob("Lisboa", "Lisboa", 1));
+	public void price1Test() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		JobView job = transporter.requestJob("Lisboa", "Lisboa", 1);
+		assert(job.getJobPrice() == 0);
+	}
+	@Test(expected = BadPriceFault_Exception.class)
+	public void price0Test() throws BadLocationFault_Exception, BadPriceFault_Exception {
+		JobView job = transporter.requestJob("Lisboa", "Lisboa", 0);
+		assert(job.getJobPrice() == 0);
 	}
 
 	@Test
