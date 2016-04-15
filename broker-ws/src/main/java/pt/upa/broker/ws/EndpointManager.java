@@ -21,7 +21,7 @@ public class EndpointManager {
 	private Endpoint _endpoint;
 	private String _name;
 	
-	protected EndpointManager(String uddiURL) throws JAXRException{
+	public EndpointManager(String uddiURL) throws JAXRException{
 		Dialog.IO().debug("EndpoingManager", "Creating Endpoint Manager");
 		_uddiURL = uddiURL;
 		Dialog.IO().debug("EndpoingManager", "Endpoint Manager created");

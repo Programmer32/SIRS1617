@@ -76,7 +76,7 @@ public class BrokerManager {
 	private static final String[] SUL = { "Setúbal", "Évora", "Portalegre", "Beja", "Faro" };
 	
 	private BrokerManager(){}
-	public BrokerManager(String uddiURL, String name, String url) throws JAXRException{
+	public BrokerManager(String uddiURL, String name, String url, EndpointManager endpointManager) throws JAXRException{
 		Dialog.IO().debug(this.getClass().getSimpleName(), "Creating instance");
 		EndpointManager endpoint = new EndpointManager(uddiURL);
 		endpoint.getMaster(name);
@@ -84,7 +84,8 @@ public class BrokerManager {
 		getInstance()._uddiURL = uddiURL;
 		getInstance()._wsName = name;
 		getInstance()._wsURL = url;
-		getInstance()._endpoint = new EndpointManager(uddiURL);
+//		getInstance()._endpoint = new EndpointManager(uddiURL);
+		getInstance()._endpoint = endpointManager;
 		getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL);
 		Dialog.IO().debug(this.getClass().getSimpleName(), "Created instance");
 	}
