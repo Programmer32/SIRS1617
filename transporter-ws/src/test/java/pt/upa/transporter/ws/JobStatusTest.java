@@ -1,9 +1,14 @@
 package pt.upa.transporter.ws;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 /**
  *  Unit Test example
@@ -30,20 +35,46 @@ public class JobStatusTest {
 
 
 	// members
-	TransporterPort transporter;
+	TransporterManager transporter;
 	String id;
 	// initialization and clean-up for each test
 
 	@Before
 	public void setUp() {
-		transporter = new TransporterPort();
+		transporter = TransporterManager.getInstance();
 	}
 
 	@After
 	public void tearDown() {
-		transporter = null;
+		transporter.clearJobs();
 	}
 
 	// tests
 
+	@Test(expected = BadJobFault_Exception.class)
+	public void nullId() throws BadLocationFault_Exception, BadPriceFault_Exception, BadJobFault_Exception {
+		assertNull(transporter.jobStatus(null));
+	}
+
+	@Test(expected = BadJobFault_Exception.class)
+	public void wrongId() throws BadLocationFault_Exception, BadPriceFault_Exception, BadJobFault_Exception {
+		assertNull(transporter.jobStatus(id+"ola"));
+	}
+	
+	@Test
+	public void pickTheRightJobFromId() throws BadLocationFault_Exception, BadPriceFault_Exception, BadJobFault_Exception {
+		JobView job2 = transporter.requestJob("Lisboa", "Lisboa", 50);
+		JobView job3= transporter.requestJob("Lisboa", "Lisboa", 50);
+		JobView job4= transporter.requestJob("Lisboa", "Lisboa", 50);
+		JobView job5= transporter.requestJob("Lisboa", "Lisboa", 50);
+		
+		String testedJobId = job2.getJobIdentifier();
+		
+		assertNotEquals(testedJobId, job3.getJobIdentifier());
+		assertNotEquals(testedJobId, job4.getJobIdentifier());
+		assertNotEquals(testedJobId, job5.getJobIdentifier());
+		
+		JobView updatedJob = transporter.jobStatus(testedJobId);
+		assertEquals(testedJobId, updatedJob.getJobIdentifier());
+	}
 }
