@@ -60,7 +60,7 @@ public class BrokerClientApplication {
 			            		Dialog.IO().println("There is no transport records on UPA");
 			            		break;
 			            	}
-			            	if(round != 0)
+			            	if(round++ != 0)
 			            		for(TransportView transport : list)
 			            			Dialog.IO().clearLine();
 			            	
