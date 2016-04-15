@@ -3,6 +3,13 @@ package pt.upa.ui;
 import java.math.BigInteger;
 import java.util.Scanner;
 
+/**
+ * This is used for IO operations
+ * No native JAVA IO operations shall be called outside this class 
+ * 
+ * @author André Dias
+ *
+ */
 public class Dialog {
 	public static final String ANSI_RESET = "\u001B[0m";
 	public static final String ANSI_BLACK = "\u001B[30m";
@@ -15,6 +22,7 @@ public class Dialog {
 	public static final String ANSI_WHITE = "\u001B[37m";
 	
 	private static boolean _debug;
+	private static boolean _trace;
 	private static Scanner _input;
 	private static Dialog _instance;
 	private Dialog(){}
@@ -22,6 +30,7 @@ public class Dialog {
 	public static Dialog IO(){
 		if(Dialog._instance == null){
 			Dialog._debug = true;
+			Dialog._trace = true;
 			Dialog._instance = new Dialog();
 			Dialog._input = new Scanner(System.in);
 		}
@@ -37,23 +46,26 @@ public class Dialog {
 	public void magent(){ if(Dialog._debug) System.out.print(ANSI_PURPLE); }
 	public void cyan(){ if(Dialog._debug) System.out.print(ANSI_CYAN); }
 	public void white(){ if(Dialog._debug) System.out.print(ANSI_WHITE); }
-	
-	public void debug(String method, String message){
-		if(!Dialog._debug) return;
+	private void printTag(String s){
 		int length = 20;
 		print("[ ");
-		for(int i = 0; i < length - method.length(); i+=2) print(" ");
+		for(int i = 0; i < length - s.length(); i+=2) print(" ");
 		green();
-		print(method);
+		print(s);
 		reset();
 		int i = 0;
-		for(i = 0; i < length - method.length() - 1; i+=2) print(" ");
-		if(i*2 != length - method.length()) print(" ");
-		print(" ] " + message);
+		for(i = 0; i < length - s.length() - 1; i+=2) print(" ");
+		if(i*2 != length - s.length()) print(" ");
+		print(" ] ");
+	}
+	public void debug(String method, String message){
+		printTag(method);
+		print(message);
 		println("");
 	}
 	public void debug(String s){ if(Dialog._debug) System.out.println(s); }
-
+	public void trace(String r, String s){ if(Dialog._debug)  printTag(r); if(Dialog._trace) print(s); }
+	public void trace(String s){ if(Dialog._trace) print(s); }
 
 	public int readInteger(){ return Dialog._input.nextInt(); }
 	public double readDouble(){ return Dialog._input.nextDouble(); }
@@ -82,6 +94,7 @@ public class Dialog {
 		print(String.format("\033[%dA",1));
 		print("\033[2K");
 	}
+	public void error(String s){ red(); println(s); reset(); }
 	public void print(String s){ System.out.print(s); }
 	public void println(String s){ print(s); System.out.println(); }
 }

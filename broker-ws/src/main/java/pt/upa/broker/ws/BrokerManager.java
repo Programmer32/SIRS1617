@@ -118,7 +118,7 @@ public class BrokerManager {
 	public String requestTransport(String origin, String destination, int price)
 			throws InvalidPriceFault_Exception,
 			UnknownLocationFault_Exception,
-			UnavailableTransportFault_Exception{
+			UnavailableTransportFault_Exception, UnavailableTransportPriceFault_Exception{
 		if(price < 0){
     		Dialog.IO().debug("requestTransport", "Price is lower than zero. Aborted");
     		throw new InvalidPriceFault_Exception("Price lower than zero: " + price, new InvalidPriceFault());
@@ -219,8 +219,13 @@ public class BrokerManager {
 			try {
 				Dialog.IO().debug("requestTransport", j.getCompanyName());
 				Dialog.IO().debug("requestTransport", j.getJobIdentifier());
+				if(price < j.getJobPrice())
+					throw new UnavailableTransportPriceFault_Exception("No price lower than client's request", new UnavailableTransportPriceFault());
 				returnJobView = transporter(j.getCompanyName()).decideJob(j.getJobIdentifier(), true);
-				if(returnJobView == null) continue; //FIXME
+				if(returnJobView == null){
+					Dialog.IO().debug("requestTransport", "TransporterClient return null on decideJob");
+					continue;
+				}
 		    	
 		    	if(returnJobView.getJobState() == JobStateView.ACCEPTED){
 		    		j.setJobState(JobStateView.ACCEPTED);
@@ -233,6 +238,7 @@ public class BrokerManager {
 		    		Dialog.IO().debug("requestTransport", "Transport is now booked on the transport company");
 		        	_transports.put(transport.getId(), transport);
 		        	accepted = true;
+		        	break;
 		    	}
 			} catch (BadJobFault_Exception | JAXRException e) {
 				// TODO Auto-generated catch block
@@ -246,7 +252,9 @@ public class BrokerManager {
 		for(JobView j : offers){
 			if(j.getJobState() != JobStateView.ACCEPTED)
 				try {
-					transporter(j.getCompanyName()).decideJob(j.getJobIdentifier(), false);
+					if(transporter(j.getCompanyName()).decideJob(j.getJobIdentifier(), false) == null){
+						Dialog.IO().debug("decideJob", "TransporterClient returned null on reject job request");
+					}
 				} catch (BadJobFault_Exception | JAXRException e) {
 					// TODO Auto-generated catch block
 					//FIXME need to check return and retry if return is null
@@ -255,7 +263,7 @@ public class BrokerManager {
 		}
 
 		if(!accepted){
-			return null;
+			throw new UnavailableTransportFault_Exception("No job available", new UnavailableTransportFault());
 		}
     	return transport.getId();
 	}

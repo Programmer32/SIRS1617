@@ -10,8 +10,8 @@ public class TransporterMain {
 
 		// Check arguments
 		if (args.length < 4) {
-			System.err.println("Argument(s) missing!");
-			System.err.printf("Usage: java %s uddiURL wsName wsURL%n", TransporterMain.class.getName());
+			Dialog.IO().error("Argument(s) missing!");
+			Dialog.IO().error("Usage: java " + TransporterMain.class.getName() + " uddiURL wsName wsURL%n");
 			return;
 		}
 		
@@ -20,13 +20,14 @@ public class TransporterMain {
 			TransporterManager.getInstance().publish();
 			Dialog.IO().println("Waiting for connections");
 			Dialog.IO().println("Press enter to shutdown");
-			System.in.read();
+			Dialog.IO().readLine();
 			TransporterManager.getInstance().stop();
 		}catch(JAXRException e){
-			Dialog.IO().red();
-			Dialog.IO().println("Web Service couldn't start.");
-			Dialog.IO().println("Reason: " + e);
-			Dialog.IO().reset();
+			Dialog.IO().error("Web Service couldn't start.");
+			Dialog.IO().error("Reason: " + e);
+		}
+		for(Thread t : Thread.getAllStackTraces().keySet()){
+			Dialog.IO().debug(t.getName() + " " + t.isAlive());
 		}
 	}
 

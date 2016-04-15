@@ -20,7 +20,9 @@ public class TransporterManager {
 	private EndpointManager		_endpoint;
 	
 	private static TransporterManager _transporter;
-	
+
+	private List<Timer> _timers;
+	private List<TimerTask> _timerTasks;
 	private int _numberOfJobs;
 	private ListJobsResponse _jobs;
 	private int _id;
@@ -37,6 +39,8 @@ public class TransporterManager {
 			_transporter = new TransporterManager();
 			_transporter._port = new TransporterPort();
 			_transporter._random = new Random();
+			_transporter._timers = new ArrayList<Timer>();
+			_transporter._timerTasks = new ArrayList<TimerTask>();
 			getInstance().clearJobs();
 		}
 		return _transporter;
@@ -62,8 +66,26 @@ public class TransporterManager {
 	}
 	public void stop() throws JAXRException{
 		Dialog.IO().debug("BrokerManager.stop", "Endpoint is going to unpublish");
+		for(TimerTask t : _timerTasks){
+			if(t != null){
+				Dialog.IO().debug("stop", "Stopping timerTask: " + t.cancel());
+				Dialog.IO().debug("stop", "TimerTask stopped");
+			}
+		}
+		for(Timer t : _timers){
+			if(t != null){
+				Dialog.IO().debug("stop", "Stopping timer: " + t.purge());
+				t.cancel();
+				Dialog.IO().debug("stop", "Timer stopped");
+			}
+		}
 		_endpoint.unpublish();
+
 		Dialog.IO().debug("BrokerManager.stop", "Endpoint has unpublished WebService");
+	}
+	protected void addTimer(Timer t, TimerTask tt){
+		_timers.add(t);
+		_timerTasks.add(tt);
 	}
 	private String newJobIdentifier(String origin, String destination){
 		return _companyName + origin + destination + new Integer(_numberOfJobs++).toString();
@@ -169,11 +191,14 @@ public class TransporterManager {
 					else j.setJobPrice(price - (_random.nextInt(price - 1) + 1));
 				}
 			}
-			System.out.println("[JOB] CompanyName: " + j.getCompanyName() + " ID: " +
-					j.getJobIdentifier() + " Origin: " + j.getJobOrigin() + " Destination: " + 
-					j.getJobDestination() + " Price: " + j.getJobPrice() + " Estado: " + j.getJobState().value());
+			
+			printRequest(j.getCompanyName(), j.getJobIdentifier(), j.getJobOrigin(), j.getJobDestination(), j.getJobPrice(),j.getJobState().value());
 			return j;
 		}
+	}
+	private void printRequest(String companyName, String id, String origin, String destination, int price, String state){
+		System.out.println("[JOB] CompanyName: " + companyName + " ID: " + id + " Origin: " + origin + " Destination: " + 
+				destination + " Price: " + price + " Estado: " + state);
 	}
 
 	public JobView decideJob( String id, boolean accept) throws BadJobFault_Exception {
@@ -228,11 +253,8 @@ public class TransporterManager {
 	private class ChangeStatus extends TimerTask{
 		private JobView _j;
 		private Timer _timer;
+		private TimerTask _task;
 		protected ChangeStatus(JobView j){ _j = j; }
-		public void stop() {
-			// TODO Auto-generated method stub
-			
-		}
 		@Override
 		public void run() {
 			if(_j.getJobState() == JobStateView.ACCEPTED){
@@ -244,8 +266,9 @@ public class TransporterManager {
 			}
 			if(_j.getJobState() != JobStateView.COMPLETED && _j.getJobState() != JobStateView.REJECTED){
 				_timer = new Timer();
-				TimerTask task = new ChangeStatus(_j);
-				_timer.schedule(task, _random.nextInt(5000));
+				_task = new ChangeStatus(_j);
+				getInstance().addTimer(_timer, _task);
+				_timer.schedule(_task, _random.nextInt(5000));
 			}
 		}
 		
