@@ -118,7 +118,7 @@ public class BrokerManager {
 	public String requestTransport(String origin, String destination, int price)
 			throws InvalidPriceFault_Exception,
 			UnknownLocationFault_Exception,
-			UnavailableTransportFault_Exception, UnavailableTransportPriceFault_Exception{
+			UnavailableTransportFault_Exception, UnavailableTransportPriceFault_Exception {
 		if(price < 0){
     		Dialog.IO().debug("requestTransport", "Price is lower than zero. Aborted");
     		throw new InvalidPriceFault_Exception("Price lower than zero: " + price, new InvalidPriceFault());
