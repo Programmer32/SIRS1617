@@ -166,6 +166,7 @@ public class TransporterManager {
 				Dialog.IO().debug(methodName, "Transporter does not provide service for this destination: " + destination);
 				throw new BadLocationFault_Exception("Transporter does not provide service for this destination: " + destination, new BadLocationFault());
 			}
+			if(price < 0) return null;
 			if(price > 100){
 				Dialog.IO().debug(methodName, "Price is too high: " + price);
 				return null;
@@ -221,7 +222,8 @@ public class TransporterManager {
 		throw new BadJobFault_Exception("Identifier job has not been found on database", new BadJobFault());
 	}
 	
-	public JobView jobStatus(String id){
+	public JobView jobStatus(String id) {
+		if(id == null) return null;
 		for(JobView job : _jobs.getReturn())
 			if(job.getJobIdentifier().equals(id)){
 				JobView status = new ObjectFactory().createJobView();
