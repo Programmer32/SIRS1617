@@ -29,23 +29,27 @@ public class Dialog {
 	
 	public static Dialog IO(){
 		if(Dialog._instance == null){
-			Dialog._debug = true;
-			Dialog._trace = true;
+			String debug = System.getenv("UPA_DEBUG");
+			String trace = System.getenv("UPA_TRACE");
+			Dialog._debug = false;
+			Dialog._trace = false;
+			if(debug != null && debug.equals("true")) Dialog._debug = true;
+			if(trace != null && trace.equals("true")) Dialog._trace = true;
 			Dialog._instance = new Dialog();
 			Dialog._input = new Scanner(System.in);
 		}
 		return Dialog._instance;
 	}
 	
-	public void black(){ if(Dialog._debug) System.out.println(ANSI_BLACK); }
-	public void red(){ if(Dialog._debug) System.out.print(ANSI_RED); }
-	public void reset(){ if(Dialog._debug) System.out.print(ANSI_RESET); }
-	public void green(){ if(Dialog._debug) System.out.print(ANSI_GREEN); }
-	public void yellow(){ if(Dialog._debug) System.out.print(ANSI_YELLOW); }
-	public void blue(){ if(Dialog._debug) System.out.print(ANSI_BLUE); }
-	public void magent(){ if(Dialog._debug) System.out.print(ANSI_PURPLE); }
-	public void cyan(){ if(Dialog._debug) System.out.print(ANSI_CYAN); }
-	public void white(){ if(Dialog._debug) System.out.print(ANSI_WHITE); }
+	public void black(){ System.out.println(ANSI_BLACK); }
+	public void red(){ System.out.print(ANSI_RED); }
+	public void reset(){ System.out.print(ANSI_RESET); }
+	public void green(){ System.out.print(ANSI_GREEN); }
+	public void yellow(){ System.out.print(ANSI_YELLOW); }
+	public void blue(){ System.out.print(ANSI_BLUE); }
+	public void magent(){ System.out.print(ANSI_PURPLE); }
+	public void cyan(){ System.out.print(ANSI_CYAN); }
+	public void white(){ System.out.print(ANSI_WHITE); }
 	private void printTag(String s){
 		int length = 20;
 		print("[ ");
@@ -59,13 +63,14 @@ public class Dialog {
 		print(" ] ");
 	}
 	public void debug(String method, String message){
+		if(!Dialog._debug) return; 
 		printTag(method);
 		print(message);
 		println("");
 	}
 	public void debug(String s){ if(Dialog._debug) System.out.println(s); }
-	public void trace(String r, String s){ if(Dialog._debug)  printTag(r); if(Dialog._trace) print(s); }
-	public void trace(String s){ if(Dialog._trace) print(s); }
+	public void trace(String r, String s){ if(!Dialog._debug && !Dialog._trace) return; if(Dialog._debug && Dialog._trace) printTag(r); if(Dialog._trace) println(s); }
+	public void trace(String s){ if(Dialog._trace) println(s); }
 
 	public int readInteger(){ return Dialog._input.nextInt(); }
 	public double readDouble(){ return Dialog._input.nextDouble(); }
