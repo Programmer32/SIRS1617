@@ -49,6 +49,7 @@ mvn install
 ```
 cd transporter-ws
 mvn clean install
+mvn package
 mvn exec:java
 ```
 
@@ -57,6 +58,7 @@ mvn exec:java
 ```
 cd transporter-ws-cli
 mvn clean install
+mvn package
 mvn exec:java
 
 ```
@@ -70,6 +72,7 @@ mvn exec:java
 ```
 cd broker-ws
 mvn clean install
+mvn package
 mvn exec:java
 ```
 
@@ -78,6 +81,7 @@ mvn exec:java
 ```
 cd broker-ws-cli
 mvn clean install
+mvn package
 mvn exec:java
 ```
 
