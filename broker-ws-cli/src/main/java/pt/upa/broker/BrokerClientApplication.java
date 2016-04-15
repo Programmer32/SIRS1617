@@ -5,12 +5,14 @@ import java.util.Scanner;
 
 import pt.upa.broker.ws.TransportView;
 import pt.upa.broker.ws.UnavailableTransportFault_Exception;
+import pt.upa.broker.ws.UnavailableTransportPriceFault_Exception;
 import pt.upa.broker.ws.UnknownLocationFault_Exception;
 import pt.upa.broker.ws.cli.BrokerClient;
 import pt.upa.ui.Dialog;
 
 public class BrokerClientApplication {
 
+	@SuppressWarnings("unused")
 	public static void main(String[] args) throws Exception {
 		String _uddiURL = args[0];
 		String _wsName = args[1];
@@ -26,14 +28,14 @@ public class BrokerClientApplication {
 				command = input.next();
 	            switch(command){
 		            case "ping":
-		            	System.out.println(client.ping(""));
+		            	Dialog.IO().println(client.ping(""));
 		            	break;
 		            case "request":
 		            	try{
 		            		String id = client.requestTransport(input.next(), input.next(), input.nextInt());
-		            		System.out.println("Transport requested with id " + id);
-		            	}catch(UnavailableTransportFault_Exception | UnknownLocationFault_Exception e){
-		            		System.out.println(e.getMessage());
+		            		Dialog.IO().println("Transport requested with id " + id);
+		            	}catch(UnavailableTransportFault_Exception | UnknownLocationFault_Exception | UnavailableTransportPriceFault_Exception e){
+		            		Dialog.IO().println(e.getMessage());
 		            	}
 		            	break;
 		            case "list":
@@ -44,8 +46,8 @@ public class BrokerClientApplication {
 		            		Dialog.IO().println("There is no transport records on UPA");
 		            		break;
 		            	}
-		            	System.out.println("LISTING TRANSPORTS");
-		            	System.out.println(" ID                                               |" +
+		            	Dialog.IO().println("LISTING TRANSPORTS");
+		            	Dialog.IO().println(" ID                                               |" +
 		            					   " Origin                  |" +
 		            					   " Destination             |" +
 		            					   " Price     |" +
@@ -136,7 +138,11 @@ public class BrokerClientApplication {
 			}while(!command.equals("exit"));
 			input.close();
 		} catch (Exception e) {
-			e.printStackTrace();
+			if(e.getMessage().equals("Broker not found")){
+				Dialog.IO().error("Could not connect to Broker WebService!");
+			}else{
+				e.printStackTrace();
+			}
 		}
 	}
 

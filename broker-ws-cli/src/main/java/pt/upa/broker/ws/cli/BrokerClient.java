@@ -3,7 +3,6 @@ package pt.upa.broker.ws.cli;
 import java.util.List;
 import java.util.Map;
 
-import javax.xml.registry.JAXRException;
 import javax.xml.ws.BindingProvider;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.broker.ws.BrokerPortType;
@@ -24,7 +23,7 @@ public class BrokerClient {
 	private BrokerPortType _port;
 	private BindingProvider _bindingProvider;
 	
-	public BrokerClient(String uddiURL, String wsName) throws JAXRException{
+	public BrokerClient(String uddiURL, String wsName) throws Exception{
 		_uddiURL = uddiURL;
 		_wsName = wsName;
 		establishConnection();
@@ -46,14 +45,14 @@ public class BrokerClient {
 				endpointAddress);
 	}
 	
-	public void establishConnection() throws JAXRException{
+	public void establishConnection() throws Exception{
 		UDDINaming uddiNaming = new UDDINaming(_uddiURL);
 		
 		String endpointAddress = uddiNaming.lookup(_wsName);
 
 		if (endpointAddress == null){
-			System.out.println("Not found!");
-			return; //Should throw exception
+			Dialog.IO().debug("establishConneciton", "Not found!");
+			throw new Exception("Broker not found");
 		}else{
 			System.out.printf("Found %s%n", endpointAddress);
 		}
