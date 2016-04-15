@@ -51,12 +51,12 @@ public class JobStatusTest {
 
 	// tests
 
-	@Test(expected = BadJobFault_Exception.class)
+	@Test
 	public void nullId() throws BadLocationFault_Exception, BadPriceFault_Exception, BadJobFault_Exception {
 		assertNull(transporter.jobStatus(null));
 	}
 
-	@Test(expected = BadJobFault_Exception.class)
+	@Test
 	public void wrongId() throws BadLocationFault_Exception, BadPriceFault_Exception, BadJobFault_Exception {
 		assertNull(transporter.jobStatus(id+"ola"));
 	}

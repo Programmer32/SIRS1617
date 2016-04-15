@@ -76,7 +76,7 @@ public class BrokerManager {
 	private static final String[] SUL = { "Setúbal", "Évora", "Portalegre", "Beja", "Faro" };
 	
 	private BrokerManager(){}
-	public BrokerManager(String uddiURL, String name, String url) throws JAXRException{
+	public BrokerManager(String uddiURL, String name, String url, EndpointManager endpointManager) throws JAXRException{
 		Dialog.IO().debug(this.getClass().getSimpleName(), "Creating instance");
 		EndpointManager endpoint = new EndpointManager(uddiURL);
 		endpoint.getMaster(name);
@@ -84,7 +84,8 @@ public class BrokerManager {
 		getInstance()._uddiURL = uddiURL;
 		getInstance()._wsName = name;
 		getInstance()._wsURL = url;
-		getInstance()._endpoint = new EndpointManager(uddiURL);
+//		getInstance()._endpoint = new EndpointManager(uddiURL);
+		getInstance()._endpoint = endpointManager;
 		getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL);
 		Dialog.IO().debug(this.getClass().getSimpleName(), "Created instance");
 	}
@@ -252,7 +253,12 @@ public class BrokerManager {
 		for(JobView j : offers){
 			if(j.getJobState() != JobStateView.ACCEPTED)
 				try {
-					if(transporter(j.getCompanyName()).decideJob(j.getJobIdentifier(), false) == null){
+					TransporterClient client = transporter(j.getCompanyName());
+					if(client == null){
+						Dialog.IO().debug("requestTransport", "TranporterClient returned is null");
+						continue;
+					}
+					if(client.decideJob(j.getJobIdentifier(), false) == null){
 						Dialog.IO().debug("decideJob", "TransporterClient returned null on reject job request");
 					}
 				} catch (BadJobFault_Exception | JAXRException e) {
@@ -334,8 +340,12 @@ public class BrokerManager {
     			String companyID = _ids.get(transport.getId()).id();
     			
     			JobView job = client.jobStatus(companyID);
-  
-    			Dialog.IO().debug("viewTransport", "Response received from transporter company");
+    			if(job == null){
+    				Dialog.IO().debug("listTransports", "job received from company is null. companyID: " + companyID);
+    				transport.setState(TransportStateView.FAILED);
+    				continue;
+    			}
+    			Dialog.IO().debug("listTransports", "Response received from transporter company");
     			
     			if(job.getJobState() == JobStateView.PROPOSED){
     				transport.setState(TransportStateView.BUDGETED);
@@ -346,10 +356,10 @@ public class BrokerManager {
     			}else{
     				transport.setState(TransportStateView.fromValue(job.getJobState().value()));
     			}
-    			Dialog.IO().debug("viewTransport", "New JobState: " + job.getJobState().value());
+    			Dialog.IO().debug("listTransports", "New JobState: " + job.getJobState().value());
     			list.add(transport);
     		} catch (JAXRException e) {
-    			Dialog.IO().debug("viewTransport", "Some exception: " + e);
+    			Dialog.IO().debug("listTransports", "Some exception: " + e);
     		}
         	
     	}

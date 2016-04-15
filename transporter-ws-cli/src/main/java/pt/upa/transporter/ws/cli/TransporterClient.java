@@ -77,4 +77,9 @@ public class TransporterClient {
 	public JobView decideJob(String id, boolean accept) throws BadJobFault_Exception{
 		return _port.decideJob(id, accept);
 	}
+	
+	@Override
+	public String toString() {
+		return "uddiURL: " + _uddiURL + ", wsName: " + _wsName + ", endpoint" + _endpoint; 
+	}
 }

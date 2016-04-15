@@ -21,14 +21,13 @@ public class TransporterManager {
 	
 	private static TransporterManager _transporter;
 
-	private List<Timer> _timers;
 	private List<TimerTask> _timerTasks;
 	private int _numberOfJobs;
 	private ListJobsResponse _jobs;
 	private int _id;
 	private String _companyName;
 	private Random _random;
-	
+	private boolean _exit;
 	
 	private static final String[] NORTE = { "Porto", "Braga", "Viana do Castelo", "Vila Real", "Bragança" };
 	private static final String[] CENTRO = { "Lisboa", "Leiria", "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda" };
@@ -37,14 +36,16 @@ public class TransporterManager {
 	public static TransporterManager getInstance(){
 		if(_transporter == null){
 			_transporter = new TransporterManager();
+			_transporter._exit = false;
 			_transporter._port = new TransporterPort();
 			_transporter._random = new Random();
-			_transporter._timers = new ArrayList<Timer>();
 			_transporter._timerTasks = new ArrayList<TimerTask>();
 			getInstance().clearJobs();
 		}
 		return _transporter;
 	}
+	
+	public boolean exit(){ return _exit; }
 	
 	private TransporterManager(){}
 	
@@ -66,29 +67,23 @@ public class TransporterManager {
 	}
 	public void stop() throws JAXRException{
 		Dialog.IO().debug("BrokerManager.stop", "Endpoint is going to unpublish");
+		_exit = true;
 		for(TimerTask t : _timerTasks){
 			if(t != null){
 				Dialog.IO().debug("stop", "Stopping timerTask: " + t.cancel());
 				Dialog.IO().debug("stop", "TimerTask stopped");
 			}
 		}
-		for(Timer t : _timers){
-			if(t != null){
-				Dialog.IO().debug("stop", "Stopping timer: " + t.purge());
-				t.cancel();
-				Dialog.IO().debug("stop", "Timer stopped");
-			}
-		}
 		_endpoint.unpublish();
 
 		Dialog.IO().debug("BrokerManager.stop", "Endpoint has unpublished WebService");
 	}
-	protected void addTimer(Timer t, TimerTask tt){
-		_timers.add(t);
-		_timerTasks.add(tt);
-	}
+
+	protected void removeTimer(TimerTask t){ _timerTasks.remove(t); }
+	protected void addTimer(TimerTask t){ _timerTasks.add(t); }
+	
 	private String newJobIdentifier(String origin, String destination){
-		return _companyName + origin + destination + new Integer(_numberOfJobs++).toString();
+		return _companyName + new Integer(_numberOfJobs++).toString();
 	}
 	
 	public void id(int id){ _id = id; }
@@ -101,13 +96,17 @@ public class TransporterManager {
 	
 	public JobView requestJob(String origin, String destination, int price) throws BadLocationFault_Exception, BadPriceFault_Exception{
 		{
-			System.out.println("Job requested");
+			String methodName = new Object(){}.getClass().getEnclosingMethod().getName();
+			
+			Dialog.IO().debug(methodName,"Job requested");
+			
 			if(origin == null){
-				Dialog.IO().debug("requestJob", "Origin string cannot be null");
+				Dialog.IO().debug(methodName, "Origin string cannot be null");
 				throw new BadLocationFault_Exception("Origin string is null", new BadLocationFault());
 			}
+			
 			if(destination == null){
-				Dialog.IO().debug("requestJob", "Destination string cannot be null");
+				Dialog.IO().debug(methodName, "Destination string cannot be null");
 				throw new BadLocationFault_Exception("Destination string is null", new BadLocationFault());
 			}
 			
@@ -128,11 +127,11 @@ public class TransporterManager {
 				if(s.equals(destination)) destinationNotFound = false;
 			}
 			if(originNotFound){
-				System.out.println("Origin location not found on database: " + origin);
+				Dialog.IO().debug(methodName, "Origin location not found on database: " + origin);
 				throw new BadLocationFault_Exception("Origin unknown", new BadLocationFault());
 			}
 			if(destinationNotFound){
-				System.out.println("Destination location not found on database: " + destination);
+				Dialog.IO().debug(methodName, "Destination location not found on database: " + destination);
 				throw new BadLocationFault_Exception("Destination unknown", new BadLocationFault());
 			}
 
@@ -160,18 +159,17 @@ public class TransporterManager {
 				}
 			}
 			if(originNotFound){
-				throw new BadLocationFault_Exception("Transporter does not provide service for this origin: " + destination, new BadLocationFault());
+				Dialog.IO().debug(methodName, "Transporter does not provide service for this origin: " + origin);
+				throw new BadLocationFault_Exception("Transporter does not provide service for this origin: " + origin, new BadLocationFault());
 			}
 			if(destinationNotFound){
+				Dialog.IO().debug(methodName, "Transporter does not provide service for this destination: " + destination);
 				throw new BadLocationFault_Exception("Transporter does not provide service for this destination: " + destination, new BadLocationFault());
 			}
+			if(price < 0) return null;
 			if(price > 100){
-				System.out.println("Price is too high: " + price);
+				Dialog.IO().debug(methodName, "Price is too high: " + price);
 				return null;
-			}
-			if(price < 2){
-				System.out.println("Price is too low: " + price);
-				throw new BadPriceFault_Exception("Price is too low", new BadPriceFault());
 			}
 			JobView j = new JobView();
 			_jobs.getReturn().add(j);
@@ -180,8 +178,8 @@ public class TransporterManager {
 			j.setCompanyName(_companyName);
 			j.setJobState(JobStateView.PROPOSED);
 			j.setJobIdentifier(newJobIdentifier(origin, destination));
-			
-			if(price <= 10) j.setJobPrice(price - (_random.nextInt(price - 1) + 1));
+			if(price < 2) j.setJobPrice(0);
+			else if(price <= 10) j.setJobPrice(price - (_random.nextInt(price - 1) + 1));
 			else{
 				if(price % 2 == 0){
 					if(_id % 2 == 0) j.setJobPrice(price - (_random.nextInt(price - 1) + 1));
@@ -192,13 +190,17 @@ public class TransporterManager {
 				}
 			}
 			
-			printRequest(j.getCompanyName(), j.getJobIdentifier(), j.getJobOrigin(), j.getJobDestination(), j.getJobPrice(),j.getJobState().value());
+			printRequest(j);
 			return j;
 		}
 	}
-	private void printRequest(String companyName, String id, String origin, String destination, int price, String state){
-		System.out.println("[JOB] CompanyName: " + companyName + " ID: " + id + " Origin: " + origin + " Destination: " + 
-				destination + " Price: " + price + " Estado: " + state);
+	private void printRequest(JobView j){
+		String id = j.getJobIdentifier();
+		String origin = j.getJobOrigin();
+		String destination = j.getJobDestination();
+		int price = j.getJobPrice();
+		String state = j.getJobState().value();
+		Dialog.IO().trace("[JOB] ID: " + id + " O: " + origin + " D: " + destination + " P: " + price + " S: " + state);
 	}
 
 	public JobView decideJob( String id, boolean accept) throws BadJobFault_Exception {
@@ -207,10 +209,12 @@ public class TransporterManager {
 			if(job.getJobIdentifier().equals(id)){
 				if(accept){
 					job.setJobState(JobStateView.ACCEPTED);
-					Timer timer = new Timer();
-					TimerTask task = new ChangeStatus(job);
-					timer.schedule(task, _random.nextInt(5000));
+					ChangeStatus timer = new ChangeStatus(job);
+					timer.start();
+					addTimer(timer);
+					printRequest(job);
 				}else{
+					printRequest(job);
 					job.setJobState(JobStateView.REJECTED);
 				}
 				return job;
@@ -218,7 +222,8 @@ public class TransporterManager {
 		throw new BadJobFault_Exception("Identifier job has not been found on database", new BadJobFault());
 	}
 	
-	public JobView jobStatus(String id){
+	public JobView jobStatus(String id) {
+		if(id == null) return null;
 		for(JobView job : _jobs.getReturn())
 			if(job.getJobIdentifier().equals(id)){
 				JobView status = new ObjectFactory().createJobView();
@@ -253,22 +258,46 @@ public class TransporterManager {
 	private class ChangeStatus extends TimerTask{
 		private JobView _j;
 		private Timer _timer;
-		private TimerTask _task;
-		protected ChangeStatus(JobView j){ _j = j; }
+		protected ChangeStatus(JobView j){
+			Dialog.IO().debug("ChangeStatus", "ChangeStatus created");
+			_j = j;
+		}
+		
+		public void start(){
+			_timer = new Timer();
+			_timer.schedule(this, _random.nextInt(5000));
+		}
+		@Override
+		public boolean cancel(){
+			_timer.cancel();
+			return super.cancel();
+		}
+		
 		@Override
 		public void run() {
+			Dialog.IO().debug("ChangeStatus.run", "Changing status on a ChangeStatus object. State: " + _j.getJobState().value());
+			
 			if(_j.getJobState() == JobStateView.ACCEPTED){
 				_j.setJobState(JobStateView.HEADING);
+				printRequest(_j);
+				getInstance().removeTimer(this);
+				ChangeStatus c = new ChangeStatus(_j);
+				c.start();
+				if(!getInstance().exit()) getInstance().addTimer(c);
+				if(getInstance().exit()) c.cancel();
 			}else if(_j.getJobState() == JobStateView.HEADING){
+				
 				_j.setJobState(JobStateView.ONGOING);
+				printRequest(_j);
+				getInstance().removeTimer(this);
+				ChangeStatus c = new ChangeStatus(_j);
+				c.start();
+				if(!getInstance().exit()) getInstance().addTimer(c);
+				if(getInstance().exit()) c.cancel();
 			}else if(_j.getJobState() == JobStateView.ONGOING){
 				_j.setJobState(JobStateView.COMPLETED);
-			}
-			if(_j.getJobState() != JobStateView.COMPLETED && _j.getJobState() != JobStateView.REJECTED){
-				_timer = new Timer();
-				_task = new ChangeStatus(_j);
-				getInstance().addTimer(_timer, _task);
-				_timer.schedule(_task, _random.nextInt(5000));
+				printRequest(_j);
+				getInstance().removeTimer(this);
 			}
 		}
 		

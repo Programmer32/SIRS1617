@@ -16,43 +16,29 @@ Repositório:
 
 ## Instruções de instalação 
 
-!FIXME
- 
+On project root directory:
+```
+mvn compile
+mvn install
+```
+
 ### Ambiente
 
-[0] Iniciar sistema operativo
-
-Indicar Linux
-
-[1] Iniciar servidores de apoio
-
-JUDDI:
-```
-...
-```
-[2] Criar pasta temporária
-
-```
-cd ...
-mkdir ...
-```
-
-
-[3] Obter código fonte do projeto (versão entregue)
-
-git clone git@github.com:tecnico-distsys/A_03-project.git 
-
-[4] Instalar módulos de bibliotecas auxiliares
-
-//FIXME
-cd uddi-naming
-mvn clean install
-
-```
-cd ...
-mvn clean install
-```
-
+1. Iniciar Linux
+2. Iniciar servidores de apoio  
+   JUDDI:  
+   `$CATALINA_HOME/bin/startup.sh`
+3. Criar pasta temporária  
+   `cd $(mktemp -d)`
+4. Obter código fonte do projeto (versão entregue)  
+   `git clone git@github.com:tecnico-distsys/A_03-project.git -b SD_1`
+5. Instalar módulos de bibliotecas auxiliares  
+   `cd uddi-naming`  
+   `mvn clean install`  
+   `cd ..`  
+   `cd ui`  
+   `mvn clean install`  
+   `cd ..`
 
 -------------------------------------------------------------------------------
 
@@ -61,20 +47,21 @@ mvn clean install
 [1] Construir e executar **servidor**
 
 ```
-cd ...-ws
+cd transporter-ws
 mvn clean install
+mvn package
 mvn exec:java
 ```
 
 [2] Construir **cliente** e executar testes
 
 ```
-cd ...-ws-cli
+cd transporter-ws-cli
 mvn clean install
+mvn package
+mvn exec:java
+
 ```
-
-...
-
 
 -------------------------------------------------------------------------------
 
@@ -83,20 +70,20 @@ mvn clean install
 [1] Construir e executar **servidor**
 
 ```
-cd ...-ws
+cd broker-ws
 mvn clean install
+mvn package
 mvn exec:java
 ```
-
 
 [2] Construir **cliente** e executar testes
 
 ```
-cd ...-ws-cli
+cd broker-ws-cli
 mvn clean install
+mvn package
+mvn exec:java
 ```
-
-...
 
 -------------------------------------------------------------------------------
 **FIM**

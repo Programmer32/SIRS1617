@@ -68,7 +68,7 @@ public class RequestJobTest {
 		assertNull(transporter.requestJob("Lisboa", "Madrid", 0));
 	}
 
-	@Test(expected = BadPriceFault_Exception.class)
+	@Test
 	public void negativePriceTest() throws BadLocationFault_Exception, BadPriceFault_Exception {
 		assertNull(transporter.requestJob("Lisboa", "Lisboa", -1));
 	}
@@ -97,12 +97,12 @@ public class RequestJobTest {
 		boolean cond = price < 2;
 		assert(cond);
 	}
-	@Test(expected = BadPriceFault_Exception.class)
+	@Test
 	public void price1Test() throws BadLocationFault_Exception, BadPriceFault_Exception {
 		JobView job = transporter.requestJob("Lisboa", "Lisboa", 1);
 		assert(job.getJobPrice() == 0);
 	}
-	@Test(expected = BadPriceFault_Exception.class)
+	@Test
 	public void price0Test() throws BadLocationFault_Exception, BadPriceFault_Exception {
 		JobView job = transporter.requestJob("Lisboa", "Lisboa", 0);
 		assert(job.getJobPrice() == 0);

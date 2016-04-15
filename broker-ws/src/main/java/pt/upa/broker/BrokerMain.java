@@ -3,6 +3,7 @@ package pt.upa.broker;
 import javax.xml.registry.JAXRException;
 
 import pt.upa.broker.ws.BrokerManager;
+import pt.upa.broker.ws.EndpointManager;
 import pt.upa.ui.Dialog;
 
 public class BrokerMain {
@@ -18,7 +19,7 @@ public class BrokerMain {
 		}
 		
 		try{
-			new BrokerManager(args[0], args[1], args[2]);
+			new BrokerManager(args[0], args[1], args[2], new EndpointManager(args[0]));
 			Dialog.IO().println("Waiting for connections");
 			Dialog.IO().println("Press enter to shutdown");
 			System.in.read();
