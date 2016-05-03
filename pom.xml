@@ -14,6 +14,7 @@
 	<module>transporter-ws-cli</module>
 	<module>broker-ws</module>
 	<module>broker-ws-cli</module>
+	<module>ca</module>
   </modules>
 
 </project>

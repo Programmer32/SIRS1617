@@ -42,7 +42,7 @@ public class ViewTransportTest {
 
 	@Test
 	public void happyPath() throws JAXRException, InvalidPriceFault_Exception, UnavailableTransportFault_Exception,
-			UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception, BadLocationFault_Exception, BadPriceFault_Exception {
+			UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception, BadLocationFault_Exception, BadPriceFault_Exception, UnknownTransportFault_Exception {
 
 		fakeTransporters = new ArrayList<TransporterClient>();
 		fakeTransporters.add(mockClient);
@@ -72,16 +72,15 @@ public class ViewTransportTest {
 		brokerPortType.requestTransport("Lisboa", "Porto", 50);
 		
 		List<TransportView> bookedTransports = brokerPortType.listTransports();
+		assertEquals(1, bookedTransports.size());
+		TransportView actualTransportView = bookedTransports.get(0);
 		
 		new Verifications() {{
-			assertEquals(1, bookedTransports.size());
-			TransportView actualTransportView = bookedTransports.get(0);
 			assertEquals("Lisboa", actualTransportView.getOrigin());
 			assertEquals("Porto", actualTransportView.getDestination());
 			assertEquals(Integer.valueOf(25), actualTransportView.getPrice());
 			assertEquals("fakeCompany", actualTransportView.getTransporterCompany());
 			assertEquals(TransportStateView.BOOKED, actualTransportView.getState());
-			
 		}};
 	}
 
