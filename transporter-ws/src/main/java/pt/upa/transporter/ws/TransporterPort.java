@@ -1,6 +1,8 @@
 package pt.upa.transporter.ws;
 
 import java.util.List;
+
+import javax.jws.HandlerChain;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
@@ -20,6 +22,7 @@ import javax.xml.ws.ResponseWrapper;
  */
 @WebService(name = "TransporterPortType", targetNamespace = "http://ws.transporter.upa.pt/")
 @XmlSeeAlso({ObjectFactory.class})
+@HandlerChain(file="/handler-chain.xml")
 public class  TransporterPort implements TransporterPortType {
 	
 	/**

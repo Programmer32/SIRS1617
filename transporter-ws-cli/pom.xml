@@ -25,11 +25,11 @@
 
 		<ws.i>1</ws.i>
         <ws.name>UpaTransporter${ws.i}</ws.name>
-        
+
         <uddi.url>http://localhost:9090</uddi.url>
-		
-		
-		
+
+
+
     </properties>
 
     <dependencies>
@@ -58,6 +58,11 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+		<dependency>
+			<groupId>pt.upa.a03</groupId>
+			<artifactId>common-handlers</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
     </dependencies>
 
     <build>

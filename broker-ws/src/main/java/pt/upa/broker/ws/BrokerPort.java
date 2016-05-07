@@ -1,6 +1,8 @@
 package pt.upa.broker.ws;
 
 import java.util.List;
+
+import javax.jws.HandlerChain;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
@@ -25,6 +27,7 @@ import pt.upa.ui.Dialog;
 @XmlSeeAlso({
     ObjectFactory.class
 })
+@HandlerChain(file="/handler-chain.xml")
 public class BrokerPort implements BrokerPortType {
 
 	public BrokerPort() throws JAXRException {}

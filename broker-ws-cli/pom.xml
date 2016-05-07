@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
     <!-- http://maven.apache.org/pom.html#Quick_Overview -->
 
-    <!-- Please replace 'cxx' below with 
-        your c (campus) with a (Alameda) / t (Tagus); and 
+    <!-- Please replace 'cxx' below with
+        your c (campus) with a (Alameda) / t (Tagus); and
         your group number with two digits.
         Then delete this comment. -->
     <groupId>pt.upa.a03</groupId>
@@ -29,7 +29,7 @@
 
         <ws.name>UpaBroker</ws.name>
         <uddi.url>http://localhost:9090</uddi.url>
-        
+
     </properties>
 
     <dependencies>
@@ -63,6 +63,11 @@
         	<artifactId>ui</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+		<dependency>
+			<groupId>pt.upa.a03</groupId>
+			<artifactId>common-handlers</artifactId>
+			<version>1.0-SNAPSHOT</version>
+		</dependency>
     </dependencies>
 
     <build>

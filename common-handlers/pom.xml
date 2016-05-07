@@ -2,19 +2,8 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>pt.upa.a03</groupId>
-  <artifactId>upa</artifactId>
+  <artifactId>common-handlers</artifactId>
   <version>1.0-SNAPSHOT</version>
-  <name>Archetype - upa</name>
+  <name>Archetype - chandlers</name>
   <url>http://maven.apache.org</url>
-  <packaging>pom</packaging>
-  <modules>
-	<module>ui</module>
-	<module>uddi-naming</module>
-	<module>common-handlers</module>
-	<module>transporter-ws</module>
-	<module>transporter-ws-cli</module>
-	<module>broker-ws</module>
-	<module>broker-ws-cli</module>
-  </modules>
-
 </project>
