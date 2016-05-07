@@ -1,11 +1,21 @@
 package pt.upa.handlers;
 
+import java.io.ByteArrayOutputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.util.Set;
 
 import javax.xml.namespace.QName;
 import javax.xml.soap.SOAPMessage;
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.ws.handler.MessageContext;
-import javax.xml.ws.handler.soap.*;
+import javax.xml.ws.handler.soap.SOAPHandler;
+import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 /**
  *  This SOAPHandler outputs the contents of
@@ -49,11 +59,40 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
 
         SOAPMessage message = smc.getMessage();
         try {
-            message.writeTo(System.out);
+        	ByteArrayOutputStream out = new ByteArrayOutputStream();
+        	message.writeTo(out);
+        	String strMsg = new String(out.toByteArray());
+        	strMsg = prettyFormat(strMsg);
+        	System.out.println(strMsg);
+//            message.writeTo(System.out);
             System.out.println();   // just to add a newline to output
         } catch (Exception e) {
             System.out.printf("Exception in handler: %s%n", e);
         }
     }
+    
+    
+    private String prettyFormat(String input, int indent) {
+        try {
+            Source xmlInput = new StreamSource(new StringReader(input));
+            StringWriter stringWriter = new StringWriter();
+            StreamResult xmlOutput = new StreamResult(stringWriter);
+            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            transformerFactory.setAttribute("indent-number", indent);
+            Transformer transformer = transformerFactory.newTransformer(); 
+            transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformer.transform(xmlInput, xmlOutput);
+            return xmlOutput.getWriter().toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e); // simple exception handling, please review it
+        }
+    }
 
+    private String prettyFormat(String input) {
+        return prettyFormat(input, 2);
+    }
+    
+    
+    
+    
 }
