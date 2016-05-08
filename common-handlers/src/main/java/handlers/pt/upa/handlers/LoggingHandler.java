@@ -65,7 +65,6 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
         	strMsg = prettyFormat(strMsg);
         	System.out.println(strMsg);
 //            message.writeTo(System.out);
-            System.out.println();   // just to add a newline to output
         } catch (Exception e) {
             System.out.printf("Exception in handler: %s%n", e);
         }
