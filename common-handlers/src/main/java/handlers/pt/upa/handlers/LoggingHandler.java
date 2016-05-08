@@ -23,6 +23,8 @@ import javax.xml.ws.handler.soap.SOAPMessageContext;
  */
 public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
 
+	private static int counter = 0;
+	
     public Set<QName> getHeaders() {
         return null;
     }
@@ -52,9 +54,9 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
         Boolean outbound = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
         if (outbound) {
-            System.out.println("\u001B[33mOutbound SOAP message:\u001B[0m");
+            System.out.println("\u001B[37m"+ counter++ +"\u001B[33mOutbound SOAP message:\u001B[0m");
         } else {
-            System.out.println("\u001B[32mInbound SOAP message:\u001B[0m");
+            System.out.println("\u001B[37m"+ counter++ +"\u001B[34mInbound SOAP message:\u001B[0m");
         }
 
         SOAPMessage message = smc.getMessage();
