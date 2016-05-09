@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- WSDL contract for a Certificate Authority -->
+
+<definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+	xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata" xmlns:tns="http://ws.transporter.upa.pt/"
+	targetNamespace="http://ws.transporter.upa.pt/" name="TransporterWebService">
+
+	<types>
+		<xs:schema targetNamespace="http://ws.ca.upa.pt/" version="1.0">
+
+			<xs:complexType name="jobView">
+				<xs:sequence>
+					<xs:element name="companyName" type="xs:string"
+						minOccurs="0" />
+					<xs:element name="jobIdentifier" type="xs:string"
+						minOccurs="0" />
+					<xs:element name="jobOrigin" type="xs:string" minOccurs="0" />
+					<xs:element name="jobDestination" type="xs:string"
+						minOccurs="0" />
+					<xs:element name="jobPrice" type="xs:int" />
+					<xs:element name="jobState" type="tns:jobStateView"
+						minOccurs="0" />
+				</xs:sequence>
+			</xs:complexType>
+
+			<xs:complexType name="requestPublicKey">
+				<xs:sequence>
+					<xs:element name="entity" type="xs:string" minOccurs="0" />
+				</xs:sequence>
+			</xs:complexType>
+			<xs:element name="requestPublicKey" type="tns:requestPublicKey" />
+
+			<xs:complexType name="requestPublicKeyResponse">
+				<xs:sequence>
+					<xs:element name="return" type="tns:jobView" minOccurs="0" />
+				</xs:sequence>
+			</xs:complexType>
+			<xs:element name="requestJobResponse" type="tns:requestJobResponse" />
+
+		</xs:schema>
+	</types>
+
+	<!-- Messages (use elements defined in the schema) -->
+	<message name="requestPublicKey">
+		<part name="parameters" element="tns:requestPublicKey" />
+	</message>
+	<message name="requestPublicKeyResponse">
+		<part name="parameters" element="tns:requestPublicKeyResponse" />
+	</message>
+
+	<!-- Port Type (Interface) -->
+	<portType name="CAPortType">
+		<operation name="requestPublicKey">
+			<input wsam:Action="http://ws.ca.upa.pt/CAPort/requestPublicKeyRequest"
+				message="tns:requestPublicKey" />
+			<output wsam:Action="http://ws.ca.upa.pt/CAPort/requestPublicKeyResponse"
+				message="tns:requestPublicKeyResponse" />
+		</operation>
+	</portType>
+
+	<!-- SOAP/HTTP Binding -->
+	<binding name="CAPortSoapHttpBinding" type="tns:CAPortType">
+		<soap:binding transport="http://schemas.xmlsoap.org/soap/http"
+			style="document" />
+
+		<operation name="requestJob">
+			<soap:operation soapAction="" />
+			<input>
+				<soap:body use="literal" />
+			</input>
+			<output>
+				<soap:body use="literal" />
+			</output>
+			<fault name="BadLocationFault">
+				<soap:fault name="BadLocationFault" use="literal" />
+			</fault>
+			<fault name="BadPriceFault">
+				<soap:fault name="BadPriceFault" use="literal" />
+			</fault>
+		</operation>
+
+	</binding>
+
+	<!-- Service -->
+	<service name="CertificateAuthority">
+		<port name="CAPort" binding="tns:CAPortSoapHttpBinding">
+			<soap:address location="http://host:port/ca-ws/endpoint" />
+		</port>
+	</service>
+
+</definitions>

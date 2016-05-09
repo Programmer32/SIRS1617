@@ -8,6 +8,8 @@ import java.security.PublicKey;
 import org.junit.Before;
 import org.junit.Test;
 
+import pt.upa.ui.Dialog;
+
 public class KeyTest {
 
 	private CAManager caManager;
@@ -56,7 +58,8 @@ public class KeyTest {
 			transporterCliKey = KeyUtils.readPublicKey(PATH + "transporter-ws-cli.public.key");
 		} catch (Exception e) {
 			e.printStackTrace();
-			fail("Test setup error");
+			Dialog.IO().error("Test setup error");
+			fail();
 		}
 	}
 
