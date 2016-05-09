@@ -34,20 +34,23 @@ public class TransporterClient {
 		requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
 				_endpoint);
 	}
-	public TransporterClient(String uddiURL, String wsName) throws JAXRException {
+	public TransporterClient(String uddiURL, String wsName) throws TransporterClientException {
 		_uddiURL = uddiURL;
 		_wsName = wsName;
 		establishConnection();
 	}
 	
-	public void establishConnection() throws JAXRException{
-		UDDINaming uddiNaming = new UDDINaming(_uddiURL);
+	public void establishConnection() throws TransporterClientException{
+		try{
+			UDDINaming uddiNaming = new UDDINaming(_uddiURL);
+			_endpoint = uddiNaming.lookup(_wsName);
+		}catch(JAXRException e){
+			throw new TransporterClientException("Client failed lookup on UDDI",e);
+		}
 		
-		_endpoint = uddiNaming.lookup(_wsName);
-
 		if (_endpoint == null){
 			System.out.println("Not found!");
-			return; //Should throw exception
+			throw new TransporterClientException("Service not found on UDDI");
 		}else{
 			System.out.printf("Found %s%n", _endpoint);
 		}
@@ -64,7 +67,10 @@ public class TransporterClient {
 	
 	public String ping(){
 		return _port.ping("ola");
-	}	
+	}
+	public String ping(String s){
+		return _port.ping(s);
+	}
 	public JobView jobStatus(String id){
 		return _port.jobStatus(id);
 	}	
@@ -76,6 +82,10 @@ public class TransporterClient {
 	}
 	public JobView decideJob(String id, boolean accept) throws BadJobFault_Exception{
 		return _port.decideJob(id, accept);
+	}
+	
+	public void clearJobs(){
+		_port.clearJobs();
 	}
 	
 	@Override

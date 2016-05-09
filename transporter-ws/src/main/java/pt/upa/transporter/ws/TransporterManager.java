@@ -166,7 +166,7 @@ public class TransporterManager {
 				Dialog.IO().debug(methodName, "Transporter does not provide service for this destination: " + destination);
 				throw new BadLocationFault_Exception("Transporter does not provide service for this destination: " + destination, new BadLocationFault());
 			}
-			if(price < 0) throw new BadPriceFault_Exception("Negative price", new BadPriceFault());
+			if(price < 0) return null;
 			if(price > 100){
 				Dialog.IO().debug(methodName, "Price is too high: " + price);
 				return null;

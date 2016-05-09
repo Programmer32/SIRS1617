@@ -11,6 +11,7 @@ import javax.xml.ws.Endpoint;
 
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.broker.ws.cli.BrokerClient;
+import pt.upa.broker.ws.cli.BrokerClientException;
 import pt.upa.transporter.ws.cli.TransporterClient;
 import pt.upa.ui.Dialog;
 
@@ -122,7 +123,19 @@ public class EndpointManager {
 		Dialog.IO().debug("EndManager.unpublish", "Endpoint has unpublished WebService");
 		
 	}
-
+	public boolean masterAlive(String name) throws JAXRException {
+		try{
+			if(_uddiNaming == null) _uddiNaming = new UDDINaming(_uddiURL);
+			String endpoint = _uddiNaming.lookup(name);
+			if(endpoint == null) return false;
+			BrokerClient client = new BrokerClient(endpoint);
+			client.ping(name);
+			return true;
+		}catch(JAXRException | BrokerClientException e){
+			return false;
+		}		
+	}
+	
 	public void getMaster(String name) throws JAXRException {
 		if(_uddiNaming == null) _uddiNaming = new UDDINaming(_uddiURL);
 		String endpoint = _uddiNaming.lookup(name);

@@ -9,7 +9,12 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.jws.WebMethod;
+import javax.jws.WebParam;
+import javax.jws.WebResult;
 import javax.xml.registry.JAXRException;
+import javax.xml.ws.RequestWrapper;
+import javax.xml.ws.ResponseWrapper;
 
 import pt.upa.broker.ws.InvalidPriceFault;
 import pt.upa.broker.ws.InvalidPriceFault_Exception;
@@ -19,6 +24,8 @@ import pt.upa.broker.ws.UnavailableTransportFault;
 import pt.upa.broker.ws.UnavailableTransportFault_Exception;
 import pt.upa.broker.ws.UnknownLocationFault;
 import pt.upa.broker.ws.UnknownLocationFault_Exception;
+import pt.upa.broker.ws.cli.BrokerClient;
+import pt.upa.broker.ws.cli.BrokerClientException;
 import pt.upa.transporter.ws.BadJobFault_Exception;
 import pt.upa.transporter.ws.BadLocationFault_Exception;
 import pt.upa.transporter.ws.BadPriceFault_Exception;
@@ -37,6 +44,8 @@ public class BrokerManager {
 		protected String companyName(){ return _companyName; }
 		
 	}
+	
+	private ArrayList<String> _brokerSlaves;
 	
 	private String _uddiURL;
 	private String _wsName;
@@ -79,15 +88,42 @@ public class BrokerManager {
 	public BrokerManager(String uddiURL, String name, String url, EndpointManager endpointManager) throws JAXRException{
 		Dialog.IO().debug(this.getClass().getSimpleName(), "Creating instance");
 		EndpointManager endpoint = new EndpointManager(uddiURL);
-		endpoint.getMaster(name);
-		getInstance()._master = true;
+
 		getInstance()._uddiURL = uddiURL;
 		getInstance()._wsName = name;
 		getInstance()._wsURL = url;
-//		getInstance()._endpoint = new EndpointManager(uddiURL);
 		getInstance()._endpoint = endpointManager;
-		getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL);
+		if(endpoint.masterAlive(name))
+			try {
+				register();
+			} catch (BrokerClientException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		else becomeMaster();
 		Dialog.IO().debug(this.getClass().getSimpleName(), "Created instance");
+	}
+	
+	/**
+	 * This method is called to set a Broker as Masters
+	 * @throws JAXRException 
+	 */
+	public void becomeMaster() throws JAXRException{
+		Dialog.IO().debug(this.getClass().getSimpleName(), "Becoming master");
+		getInstance()._master = true;
+		getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL);
+	}
+	
+	/**
+	 * This method register slave broker on Masters
+	 * @throws JAXRException 
+	 * @throws BrokerClientException 
+	 */
+	public void register() throws JAXRException, BrokerClientException{
+		getInstance()._master = false;
+		getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL + "_Slave");
+		BrokerClient client = new BrokerClient(getInstance()._uddiURL, getInstance()._wsURL);
+		client.addSlave(getInstance()._wsURL);
 	}
 	public void stop() throws JAXRException{
 		Dialog.IO().debug("BrokerManager.stop", "Endpoint is going to unpublish");
@@ -274,10 +310,11 @@ public class BrokerManager {
     	return transport.getId();
 	}
 	
-	public TransportView viewTransport(String id){
+	public TransportView viewTransport(String id) throws UnknownTransportFault_Exception{
     	Dialog.IO().debug("viewTransport", "Getting transport object");
     	TransportView transport = _transports.get(id);
-    	if(transport == null){ Dialog.IO().debug("viewTransport", "There is no such transport with this id " + id); return null; }
+    	if(transport == null){ Dialog.IO().debug("viewTransport", "There is no such transport with this id " + id);
+    	throw new UnknownTransportFault_Exception("No such job", new UnknownTransportFault()); }
     	if(transport.getState().value().equals("COMPLETED")){
     		Dialog.IO().debug("viewTransport", "Transport is completed so there is no need to check with transporter company");
     		return transport;
@@ -374,4 +411,15 @@ public class BrokerManager {
 		getInstance()._transports = new HashMap<String, TransportView>();
 		Dialog.IO().debug("clearTransports", "Transports hash map clean");
 	}
+	
+	public void updateJob(String origin, String destination, int price, String id, String companyID, String companyName){
+    	Dialog.IO().debug("updateJob", "Job is being updated by Master Broker");
+    	//TODO
+    }
+
+	public void addSlave(String endpoint){
+    	Dialog.IO().debug("addSlave", "addSlave");
+		_brokerSlaves.add(endpoint);
+    }
+    
 }

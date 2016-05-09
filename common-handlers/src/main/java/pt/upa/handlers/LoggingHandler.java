@@ -52,23 +52,23 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
     private void logToSystemOut(SOAPMessageContext smc) {
         Boolean outbound = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
-        if (outbound) {
+       /* if (outbound) {
             System.out.println("\u001B[33mOutbound SOAP message:\u001B[0m");
         } else {
             System.out.println("\u001B[34mInbound SOAP message:\u001B[0m");
-        }
+        }*/
 
-        SOAPMessage message = smc.getMessage();
+       /* SOAPMessage message = smc.getMessage();
         try {
         	ByteArrayOutputStream out = new ByteArrayOutputStream();
         	message.writeTo(out);
         	String strMsg = new String(out.toByteArray());
         	strMsg = prettyFormat(strMsg);
-        	System.out.printf(strMsg);
+        	//System.out.printf(strMsg);
 //            message.writeTo(System.out);
         } catch (Exception e) {
             System.out.printf("Exception in handler: %s%n\n", e);
-        }
+        }*/
     }
     
     

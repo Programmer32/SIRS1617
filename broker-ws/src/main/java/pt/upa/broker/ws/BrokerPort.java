@@ -133,5 +133,56 @@ public class BrokerPort implements BrokerPortType {
     	Dialog.IO().debug("clearTransports", "Request to clean transports list");
     	BrokerManager.getInstance().clearTransports();
     }
+    
+    
+    /**
+     * 
+     * @param companyID
+     * @param price
+     * @param origin
+     * @param companyName
+     * @param destination
+     * @param id
+     * @return
+     *     returns java.lang.String
+     */
+    @WebMethod
+    @WebResult(name = "out", targetNamespace = "")
+    @RequestWrapper(localName = "updateJob", targetNamespace = "http://ws.broker.upa.pt/", className = "pt.upa.broker.ws.UpdateJob")
+    @ResponseWrapper(localName = "updateJobResponse", targetNamespace = "http://ws.broker.upa.pt/", className = "pt.upa.broker.ws.UpdateJobResponse")
+    public void updateJob(
+        @WebParam(name = "origin", targetNamespace = "")
+        String origin,
+        @WebParam(name = "destination", targetNamespace = "")
+        String destination,
+        @WebParam(name = "price", targetNamespace = "")
+        int price,
+        @WebParam(name = "id", targetNamespace = "")
+        String id,
+        @WebParam(name = "companyID", targetNamespace = "")
+        String companyID,
+        @WebParam(name = "companyName", targetNamespace = "")
+        String companyName){
+    	Dialog.IO().debug("updateJob", "Job is being updated by Master Broker");
+    	BrokerManager.getInstance().updateJob(origin, destination, price, id, companyID, companyName);
+    }
+
+    /**
+     * 
+     * @param endpoint
+     * @return
+     *     returns java.lang.String
+     */
+    @WebMethod
+    @WebResult(name = "webserviceName", targetNamespace = "")
+    @RequestWrapper(localName = "addSlave", targetNamespace = "http://ws.broker.upa.pt/", className = "pt.upa.broker.ws.AddSlave")
+    @ResponseWrapper(localName = "addSlaveResponse", targetNamespace = "http://ws.broker.upa.pt/", className = "pt.upa.broker.ws.AddSlaveResponse")
+    public void addSlave(
+        @WebParam(name = "endpoint", targetNamespace = "")
+        String endpoint){
+    	Dialog.IO().debug("addSlave", "Request to add a slave");
+    	BrokerManager.getInstance().addSlave(endpoint);
+    }
+    
 
 }

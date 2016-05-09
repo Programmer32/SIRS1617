@@ -60,7 +60,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	public boolean handleMessage(SOAPMessageContext smc) {
 		Boolean outbound = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
-		if (outbound) {
+		/*if (outbound) {
 			try{
 				signMessage(smc);
 			}catch (Exception e){
@@ -80,12 +80,12 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 				System.out.printf("\u001B[31mFailed to validate message because: %s%n\u001B[0m\n", e);
 				return false;
 			}
-		}
+		}*/
 		return true;
 	}
 
 	public boolean handleFault(SOAPMessageContext smc) {
-		System.out.println("\u001B[31mHandle Fault: TODO\u001B[0m");
+		//System.out.println("\u001B[31mHandle Fault: TODO\u001B[0m");
 		//        logToSystemOut(smc);
 		return true;
 	}

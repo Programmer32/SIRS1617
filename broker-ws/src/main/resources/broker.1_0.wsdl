@@ -155,6 +155,48 @@
             </xs:complexType>
             <xs:element name="UnknownTransportFault" type="tns:UnknownTransportFault" />
         
+            <xs:element name="updateJob">
+            	<xs:complexType>
+            		<xs:sequence>
+
+            			<xs:element name="origin" type="xs:string"></xs:element>
+            			<xs:element name="destination"
+            				type="xs:string">
+            			</xs:element>
+            			<xs:element name="price" type="xs:int">
+            			</xs:element>
+            			<xs:element name="id" type="xs:string">
+            			</xs:element>
+            			<xs:element name="companyID" type="xs:string">
+            			</xs:element>
+            			<xs:element name="companyName"
+            				type="xs:string">
+            			</xs:element>
+            		</xs:sequence>
+            	</xs:complexType>
+            </xs:element>
+            <xs:element name="updateJobResponse">
+            	<xs:complexType>
+            		<xs:sequence>
+
+            		</xs:sequence>
+            	</xs:complexType>
+            </xs:element>
+            <xs:element name="addSlave">
+            	<xs:complexType>
+            		<xs:sequence>
+
+            			<xs:element name="endpoint" type="xs:string"></xs:element>
+            		</xs:sequence>
+            	</xs:complexType>
+            </xs:element>
+            <xs:element name="addSlaveResponse">
+            	<xs:complexType>
+            		<xs:sequence>
+
+            		</xs:sequence>
+            	</xs:complexType>
+            </xs:element>
         </xs:schema>
     </types>
 
@@ -211,6 +253,18 @@
     </message>
 
     <!-- Port Type (Interface) -->
+    <message name="updateJobRequest">
+    	<part name="parameters" element="tns:updateJob"></part>
+    </message>
+    <message name="updateJobResponse">
+    	<part name="parameters" element="tns:updateJobResponse"></part>
+    </message>
+    <message name="addSlaveRequest">
+    	<part name="parameters" element="tns:addSlave"></part>
+    </message>
+    <message name="addSlaveResponse">
+    	<part name="parameters" element="tns:addSlaveResponse"></part>
+    </message>
     <portType name="BrokerPortType">
 
         <operation name="ping">
@@ -258,6 +312,14 @@
                 message="tns:listTransportsResponse" />
         </operation>
 
+        <operation name="updateJob">
+        	<input message="tns:updateJobRequest"></input>
+        	<output message="tns:updateJobResponse"></output>
+        </operation>
+        <operation name="addSlave">
+        	<input message="tns:addSlaveRequest"></input>
+        	<output message="tns:addSlaveResponse"></output>
+        </operation>
         <operation name="clearTransports">
             <input
                 wsam:Action="http://ws.broker.upa.pt/BrokerPort/clearTransportsRequest"
@@ -331,6 +393,25 @@
         </operation>
 
         <operation name="clearTransports">
+            <soap:operation soapAction="" />
+            <input>
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
+        </operation>
+        <operation name="updateJob">
+            <soap:operation soapAction="" />
+            <input>
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
+        </operation>
+        
+        <operation name="addSlave">
             <soap:operation soapAction="" />
             <input>
                 <soap:body use="literal" />

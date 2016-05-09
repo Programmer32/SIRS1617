@@ -23,48 +23,63 @@ public class BrokerClient {
 	private BrokerPortType _port;
 	private BindingProvider _bindingProvider;
 	
-	public BrokerClient(String uddiURL, String wsName) throws Exception{
+	public BrokerClient(String uddiURL, String wsName) throws BrokerClientException {
 		_uddiURL = uddiURL;
 		_wsName = wsName;
 		establishConnection();
+		
 	}
-	public BrokerClient(String endpointAddress){
+	public BrokerClient(String endpointAddress)  throws BrokerClientException {
 		Dialog.IO().debug("BrokerClient", "Creating a BrokerClient " + endpointAddress);
 		if (endpointAddress == null){
 			Dialog.IO().debug("BrokerClient", "Null endpoint received");
 			return; //Should throw exception
 		}
+		try{
+			
+			_client = new BrokerService();
+			_port = _client.getBrokerPort();
 
-		_client = new BrokerService();
-		_port = _client.getBrokerPort();
-
-		_bindingProvider = (BindingProvider) _port;
-		Map<String, Object> requestContext = _bindingProvider
-				.getRequestContext();
-		requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
-				endpointAddress);
+			_bindingProvider = (BindingProvider) _port;
+			Map<String, Object> requestContext = _bindingProvider
+					.getRequestContext();
+			requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
+					endpointAddress);
+		
+		}catch(Exception e){
+			throw new BrokerClientException("Service with name BrokerWebService not found on UDDI at http://localhost:9090");
+		}
 	}
 	
-	public void establishConnection() throws Exception{
-		UDDINaming uddiNaming = new UDDINaming(_uddiURL);
+	public void establishConnection() throws BrokerClientException{
+		UDDINaming uddiNaming;
+		String endpointAddress;
+		try{
+			uddiNaming = new UDDINaming(_uddiURL);
+			endpointAddress = uddiNaming.lookup(_wsName);
+		}catch(Exception e){
+			
+			throw new BrokerClientException("Client failed lookup on UDDI",e);
+		}
 		
-		String endpointAddress = uddiNaming.lookup(_wsName);
-
 		if (endpointAddress == null){
 			Dialog.IO().debug("establishConneciton", "Not found!");
-			throw new Exception("Broker not found");
+			throw new BrokerClientException("Service with name BrokerWebService not found on UDDI at http://localhost:9090");
 		}else{
 			System.out.printf("Found %s%n", endpointAddress);
 		}
+		try{
+			_client = new BrokerService();
+			_port = _client.getBrokerPort();
 
-		_client = new BrokerService();
-		_port = _client.getBrokerPort();
-
-		_bindingProvider = (BindingProvider) _port;
-		Map<String, Object> requestContext = _bindingProvider
-				.getRequestContext();
-		requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
+			_bindingProvider = (BindingProvider) _port;
+			Map<String, Object> requestContext = _bindingProvider
+					.getRequestContext();
+			requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
 				endpointAddress);
+		}catch(Exception e){
+			throw new BrokerClientException("Service with name BrokerWebService not found on UDDI at http://localhost:9090");
+		}
 	}
 	
 	public String ping(String name){
@@ -83,5 +98,13 @@ public class BrokerClient {
 	}
 	public void clearTransports(){
 		_port.clearTransports();
+	}
+	
+	public void addSlave(String endpoint){
+		_port.addSlave(endpoint);
+	}
+	
+	public void updateJob(String origin, String destination, int price, String id, String companyID, String companyName){
+		_port.updateJob(origin, destination, price, id, companyID, companyName);
 	}
 }
