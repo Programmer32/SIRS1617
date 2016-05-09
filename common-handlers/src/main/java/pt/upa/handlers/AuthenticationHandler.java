@@ -22,6 +22,7 @@ import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
+import java.time.Instant;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -41,18 +42,35 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
+import pt.upa.ui.Dialog;
+
 
 
 public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
-	public static final String RESPONSE_HEADER = "myResponseHeader";
-	public static final String RESPONSE_NS = "urn:example";
-	public static final String REQUEST_HEADER = "myRequestHeader";
-	public static final String REQUEST_NS = "urn:example";
 	
+	private static long counter = 0;
+	
+	public static final String DIGEST_HEADER    = "digested_message";
+	public static final String DIGEST_NAMESPACE = "http://ws.transporter.upa.pt/";
+	public static final String DIGEST_PREFIX    = "e";
+	
+	public static final String NOUNCE_HEADER    = "nounce_header";
+	public static final String NOUNCE_NAMESPACE = DIGEST_NAMESPACE;
+	public static final String NOUNCE_PREFIX    = "e";
+	
+	public static final String AUTHOR_HEADER    = "author_header";
+	public static final String AUTHOR_NAMESPACE = DIGEST_NAMESPACE;
+	public static final String AUTHOR_PREFIX    = "e";
 	
 	public static final String CA_CERTIFICATE_FILE = "./src/main/resources/ca.pem";
 	public static final String CIPHER_MODE = "RSA/ECB/PKCS1Padding";
 	public static final String DIGEST_MODE = "SHA-512";
+	
+	public static final String NOUNCE_DELIMITER = ";;;";
+	public static final int DIFFERENCE_SECONDS  = 30;
+	
+	public String _author = "autor da mensagem : TODO";
+	
 	public Set<QName> getHeaders() {
 		return null;
 	}
@@ -60,7 +78,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	public boolean handleMessage(SOAPMessageContext smc) {
 		Boolean outbound = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
-		/*if (outbound) {
+		if (outbound) {
 			try{
 				signMessage(smc);
 			}catch (Exception e){
@@ -80,12 +98,12 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 				System.out.printf("\u001B[31mFailed to validate message because: %s%n\u001B[0m\n", e);
 				return false;
 			}
-		}*/
+		}
 		return true;
 	}
 
 	public boolean handleFault(SOAPMessageContext smc) {
-		//System.out.println("\u001B[31mHandle Fault: TODO\u001B[0m");
+		System.out.println("\u001B[31mHandle Fault: TODO\u001B[0m");
 		//        logToSystemOut(smc);
 		return true;
 	}
@@ -93,11 +111,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	// nothing to clean up
 	public void close(MessageContext messageContext) {}
 
-	
-	
-	
-	
-	
 	
 	private static byte[] hash(String text) throws NoSuchAlgorithmException {
 		MessageDigest messageDigest = MessageDigest.getInstance(DIGEST_MODE);
@@ -136,11 +149,11 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 		System.out.printf("\u001B[35mSigning Message\u001B[0m\n");
 		try {
 			// get SOAP envelope
-			SOAPMessage msg = smc.getMessage();
-			SOAPPart sPart = msg.getSOAPPart();
+			SOAPMessage  	   msg = smc.getMessage();
+			SOAPPart         sPart = msg.getSOAPPart();
 			SOAPEnvelope sEnvelope = sPart.getEnvelope();
-			SOAPBody sBody = sEnvelope.getBody();
-			SOAPHeader sHeader = sEnvelope.getHeader();
+			SOAPBody         sBody = sEnvelope.getBody();
+			SOAPHeader     sHeader = sEnvelope.getHeader();
 			
 			// add header
 			if (sHeader == null){
@@ -148,15 +161,22 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 			}
 			
 			// add header element (name, namespace prefix, namespace)
-			Name name = sEnvelope.createName(RESPONSE_HEADER, "e", RESPONSE_NS);
-			SOAPHeaderElement element = sHeader.addHeaderElement(name);
+			Name nameDigest = sEnvelope.createName(DIGEST_HEADER, DIGEST_PREFIX, DIGEST_NAMESPACE);
+			Name nameNounce = sEnvelope.createName(NOUNCE_HEADER, NOUNCE_PREFIX, NOUNCE_NAMESPACE);
+			Name nameAuthor = sEnvelope.createName(AUTHOR_HEADER, AUTHOR_PREFIX, AUTHOR_NAMESPACE);
+			SOAPHeaderElement elementNounce = sHeader.addHeaderElement(nameNounce);
+			SOAPHeaderElement elementAuthor = sHeader.addHeaderElement(nameAuthor);
+			SOAPHeaderElement elementDigest = sHeader.addHeaderElement(nameDigest);
+
+			elementNounce.addTextNode(Instant.now().toEpochMilli() +NOUNCE_DELIMITER+ ++counter);
+			elementAuthor.addTextNode(_author);
 			
 			 //Sign with private Key
 			KeyPair keys = read("./src/main/resources/pub.key","./src/main/resources/priv.key");
-			byte[] signedBody = makeDigitalSignature(sBody.getTextContent(), keys.getPrivate());
-			
+			byte[] signedBody = makeDigitalSignature(sBody.getTextContent() + elementNounce.getTextContent(), keys.getPrivate());
 			// add value to header element 
-			element.setTextContent(printHexBinary(signedBody));
+			elementDigest.setTextContent(printHexBinary(signedBody));
+			
 			//Update Envelope
 			msg.saveChanges();
 		} catch (SOAPException e) {
@@ -196,7 +216,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	 * auxiliary method to calculate new digest from text and compare it to the
 	 * to deciphered digest
 	 */
-	public static boolean verifyDigitalSignature(String receivedHeader, String receivedBody, PublicKey pubKey) throws Exception {
+	public static boolean verifyDigitalSignature(String receivedDigest, String receivedMessage, PublicKey pubKey) throws Exception {
 
 		
 		// get an RSA cipher object
@@ -204,15 +224,12 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
 		// decrypt the ciphered digest using the public key (HEADER)
 		cipher.init(Cipher.DECRYPT_MODE, pubKey);
-		byte[] signedBytes = DatatypeConverter.parseHexBinary(receivedHeader); 
+		byte[] signedBytes = DatatypeConverter.parseHexBinary(receivedDigest); 
 		byte[] decipheredDigest = cipher.doFinal(signedBytes);
 
 		
-		
-		
-		
 		//Digest the received Text
-		byte[] digest = hash(receivedBody);
+		byte[] digest = hash(receivedMessage);
 
 		// compare digests
 		if (digest.length != decipheredDigest.length)
@@ -253,6 +270,15 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 		return null;
 	}
 	
+	private SOAPElement getElement(SOAPElement sElement, Name name){
+		Iterator<?> itD = sElement.getChildElements(name);
+		// check header element
+		if (!itD.hasNext()) {
+			System.out.printf("Header element %s not found.%n", name.getLocalName());
+			throw new RuntimeException("Header element not found");
+		}
+		return (SOAPElement) itD.next();
+	}
 	
 	private boolean validateSignature(SOAPMessageContext smc) throws Exception{
 		System.out.printf("\u001B[33;1m---Validating Message: \u001B[0m");
@@ -269,15 +295,38 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 			return false;
 		}
 
-		// get first header element
-		Name name = sEnvelope.createName(RESPONSE_HEADER, "e", REQUEST_NS);
-		Iterator<?> it = sHeader.getChildElements(name);
-		// check header element
-		if (!it.hasNext()) {
-			System.out.printf("Header element %s not found.%n", RESPONSE_HEADER);
+		
+		// get Digest element
+		Name nameDigest = sEnvelope.createName(DIGEST_HEADER, DIGEST_PREFIX, DIGEST_NAMESPACE);
+		SOAPElement elementDigest = getElement(sHeader,nameDigest);
+
+		// get Nounce element
+		Name nameNounce = sEnvelope.createName(NOUNCE_HEADER, NOUNCE_PREFIX, NOUNCE_NAMESPACE);
+		SOAPElement elementNounce = getElement(sHeader,nameNounce);
+		
+		Name nameAuthor = sEnvelope.createName(AUTHOR_HEADER, AUTHOR_PREFIX, AUTHOR_NAMESPACE);
+		SOAPElement elementAuthor = getElement(sHeader,nameAuthor);
+		
+		String author = elementAuthor.getTextContent();
+		Dialog.IO().print(" Author : " + author + " ");
+		
+		//Verifying the nounce was issue recently
+		String nounce = elementNounce.getTextContent();
+		int separator = nounce.indexOf(NOUNCE_DELIMITER);
+		String expireDateStr = nounce.substring(0, separator);	
+		long  expireDateLong = Long.parseLong(expireDateStr, 10);
+		
+		long now = Instant.now().toEpochMilli();
+		long difference = now - expireDateLong;
+		Dialog.IO().debug("\nnow : " + now);
+		Dialog.IO().debug("beg : " + expireDateStr);
+		Dialog.IO().debug("dif : " + difference);
+		
+		//if more than 30 seconds had passed
+		if(Math.abs(difference) > DIFFERENCE_SECONDS * 1000){
+			System.out.println("\u001B[31m Nounce Expirated \u001B[0m");
 			return false;
 		}
-		SOAPElement headerElement = (SOAPElement) it.next();
 		
 		//Get Public Key
 		KeyPair keys = read("./src/main/resources/pub.key","./src/main/resources/priv.key");
@@ -296,7 +345,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 //		}
 // 		PublicKey pKey = certificate.getPublicKey();
 		
-		return verifyDigitalSignature(headerElement.getValue(), sBody.getTextContent(), pKey);
+		return verifyDigitalSignature(elementDigest.getValue(), sBody.getTextContent() + elementNounce.getTextContent() , pKey);
 	}
 
 	public static KeyPair read(String publicKeyPath, String privateKeyPath) throws Exception {
@@ -317,9 +366,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 		PKCS8EncodedKeySpec privSpec = new PKCS8EncodedKeySpec(privEncoded);
 		KeyFactory keyFacPriv = KeyFactory.getInstance("RSA");
 		PrivateKey priv = keyFacPriv.generatePrivate(privSpec);
-
-//		System.out.println(priv);
-//		System.out.println("---");
 
 		KeyPair keys = new KeyPair(pub, priv);
 		return keys;

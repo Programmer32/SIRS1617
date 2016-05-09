@@ -91,7 +91,7 @@ public class TransporterManager {
 	public void companyName(String companyName){ _companyName = companyName; }
 	
 	public String ping(String name){
-		return new String(_companyName  + " is online\n");
+		return new String(_companyName  + " is online!\t");
 	}
 	
 	public JobView requestJob(String origin, String destination, int price) throws BadLocationFault_Exception, BadPriceFault_Exception{

@@ -140,7 +140,7 @@ public class BrokerManager {
 	}
 
 	public String ping(String name){
-		String result = new String("PING!\n");
+		String result = new String("PING! ");
 		List<TransporterClient> transporters = transporters();
 		Dialog.IO().debug("[     PING     ]  SIZE OF TRANSPORTERS:" + transporters.size());
     	for(TransporterClient client : transporters){
