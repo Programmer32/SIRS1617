@@ -152,7 +152,7 @@ public class BrokerManager {
 			getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL + "_Slave");
 			Dialog.IO().debug("registerAsSlave", "Creating BrokerClient ");
 			
-			new BrokerClient(getInstance()._uddiURL, getInstance()._wsURL).addSlave(getInstance()._wsURL);
+			new BrokerClient(getInstance()._uddiURL, getInstance()._wsName).addSlave(getInstance()._wsURL);
 			
 			Dialog.IO().debug("registerAsSlave", "Added as slave on Master Broker");
 		}catch(JAXRException e){
