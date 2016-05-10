@@ -97,6 +97,7 @@ public class BrokerManager {
 		getInstance()._wsName = name;
 		getInstance()._wsURL = url;
 		getInstance()._endpoint = endpointManager;
+		getInstance()._brokerSlaves = new ArrayList<String>();
 		
 		//Checks if master is alive
 		if(endpoint.masterAlive(name)){
@@ -176,15 +177,15 @@ public class BrokerManager {
 	}
 
 	public String ping(String name){
-		String result = new String("PING! ");
+		String result = new String("PING!");
 		List<TransporterClient> transporters = transporters();
 		Dialog.IO().debug("[     PING     ]  SIZE OF TRANSPORTERS:" + transporters.size());
-    	for(TransporterClient client : transporters){
+/*    	for(TransporterClient client : transporters){
     		String response = client.ping();
     		Dialog.IO().debug("[     PING     ]  client's response: " + response);
     		result += response;
     	}
-		Dialog.IO().debug("[     PING     ]  Returning ping response");
+		Dialog.IO().debug("[     PING     ]  Returning ping response");*/
     	return result;
 	}
 	
@@ -453,10 +454,11 @@ public class BrokerManager {
     	//TODO
     }
 
-	public void addSlave(String endpoint){
+	public AddSlaveResponse addSlave(String endpoint){
     	Dialog.IO().debug("addSlave", "addSlave");
 		_brokerSlaves.add(endpoint);
 		Dialog.IO().debug("addSlave", "Slave added with endpoind: " + endpoint);
+		return null;
     }
     
 }
