@@ -152,20 +152,12 @@ public class BrokerPort implements BrokerPortType {
     @RequestWrapper(localName = "updateJob", targetNamespace = "http://ws.broker.upa.pt/", className = "pt.upa.broker.ws.UpdateJob")
     @ResponseWrapper(localName = "updateJobResponse", targetNamespace = "http://ws.broker.upa.pt/", className = "pt.upa.broker.ws.UpdateJobResponse")
     public void updateJob(
-        @WebParam(name = "origin", targetNamespace = "")
-        String origin,
-        @WebParam(name = "destination", targetNamespace = "")
-        String destination,
-        @WebParam(name = "price", targetNamespace = "")
-        int price,
-        @WebParam(name = "id", targetNamespace = "")
+        @WebParam(name = "jobID", targetNamespace = "")
         String id,
-        @WebParam(name = "companyID", targetNamespace = "")
-        String companyID,
-        @WebParam(name = "companyName", targetNamespace = "")
-        String companyName){
+	    @WebParam(name = "transportView", targetNamespace = "")
+	    TransportView job){
     	Dialog.IO().debug("updateJob", "Job is being updated by Master Broker");
-    	BrokerManager.getInstance().updateJob(origin, destination, price, id, companyID, companyName);
+    	BrokerManager.getInstance().updateJob(id, job);
     }
 
     /**

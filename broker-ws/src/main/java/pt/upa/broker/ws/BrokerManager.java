@@ -210,12 +210,12 @@ public class BrokerManager {
 		String result = new String("PING!");
 		List<TransporterClient> transporters = transporters();
 		Dialog.IO().debug("[     PING     ]  SIZE OF TRANSPORTERS:" + transporters.size());
-/*    	for(TransporterClient client : transporters){
+    	for(TransporterClient client : transporters){
     		String response = client.ping();
     		Dialog.IO().debug("[     PING     ]  client's response: " + response);
     		result += response;
     	}
-		Dialog.IO().debug("[     PING     ]  Returning ping response");*/
+		Dialog.IO().debug("[     PING     ]  Returning ping response");
     	return result;
 	}
 	
@@ -342,6 +342,11 @@ public class BrokerManager {
 		    		Dialog.IO().debug("requestTransport", "Transport is now booked on the transport company");
 		        	_transports.put(transport.getId(), transport);
 		        	accepted = true;
+		        	
+		        	//Needs to update all slave brokers
+		        	for(String s : getInstance()._brokerSlaves.keySet()){
+		        		getInstance()._brokerSlaves.get(s).updateJob(id, transport);
+		        	}
 		        	break;
 		    	}
 			} catch (BadJobFault_Exception | JAXRException e) {
@@ -479,7 +484,7 @@ public class BrokerManager {
 		Dialog.IO().debug("clearTransports", "Transports hash map clean");
 	}
 	
-	public void updateJob(String origin, String destination, int price, String id, String companyID, String companyName){
+	public void updateJob(String id, TransportView transport){
     	Dialog.IO().debug("updateJob", "Job is being updated by Master Broker");
     	//TODO
     }

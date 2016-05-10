@@ -188,27 +188,17 @@
         	<xs:element name="updateJob">
         		<xs:complexType>
         			<xs:sequence>
-
-        				<xs:element name="origin" type="xs:string"></xs:element>
-        				<xs:element name="destination"
-        					type="xs:string">
+        				<xs:element name="jobID" type="xs:string">
         				</xs:element>
-        				<xs:element name="price" type="xs:int">
-        				</xs:element>
-        				<xs:element name="id" type="xs:string">
-        				</xs:element>
-        				<xs:element name="companyID" type="xs:string">
-        				</xs:element>
-        				<xs:element name="companyName"
-        					type="xs:string">
-        				</xs:element>
+        				<xs:element name="transportView"
+        					type="tns:transportView">
+        				</xs:element>
         			</xs:sequence>
         		</xs:complexType>
         	</xs:element>
         	<xs:element name="updateJobResponse">
         		<xs:complexType>
         			<xs:sequence>
-
         			</xs:sequence>
         		</xs:complexType>
         	</xs:element>
@@ -394,8 +384,7 @@
         </operation>
 
         <operation name="updateJob">
-        	<input message="tns:updateJobRequest"></input>
-        	<output message="tns:updateJobResponse"></output>
+        	<input message="tns:updateJobRequest"></input>
         </operation>
         <operation name="addSlave">
         	<input message="tns:addSlaveRequest"></input>
@@ -492,9 +481,6 @@
             <input>
                 <soap:body use="literal" />
             </input>
-            <output>
-                <soap:body use="literal" />
-            </output>
         </operation>
         
         <operation name="addSlave">

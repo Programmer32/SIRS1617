@@ -8,6 +8,7 @@ import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.broker.ws.BrokerPortType;
 import pt.upa.broker.ws.BrokerService;
 import pt.upa.broker.ws.InvalidPriceFault_Exception;
+import pt.upa.broker.ws.TransportStateView;
 import pt.upa.broker.ws.TransportView;
 import pt.upa.broker.ws.UnavailableTransportFault_Exception;
 import pt.upa.broker.ws.UnavailableTransportPriceFault_Exception;
@@ -80,7 +81,7 @@ public class BrokerClient {
 			requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
 				endpointAddress);
 		}catch(Exception e){
-			throw new BrokerClientException("Service with name BrokerWebService not found on UDDI at " + _uddiURL);
+			throw new BrokerClientException("Service with name BrokerWebService not found on UDDI at " + _uddiURL + ".\n" + e.getClass() + " " + e.getMessage());
 		}
 	}
 	
@@ -106,8 +107,8 @@ public class BrokerClient {
 		_port.addSlave(endpoint);
 	}
 	
-	public void updateJob(String origin, String destination, int price, String id, String companyID, String companyName){
-		_port.updateJob(origin, destination, price, id, companyID, companyName);
+	public void updateJob(String id, TransportView status){
+		_port.updateJob(id, status);
 	}
 	
 	public void pingSlave(int a){
