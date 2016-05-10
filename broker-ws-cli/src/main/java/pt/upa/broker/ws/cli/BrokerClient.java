@@ -85,12 +85,13 @@ public class BrokerClient {
 		}
 	}
 	
-	public String ping(String name) throws BrokerClientException{
+	public String ping(String name){
 		try{
 			return _port.ping(name);
 		}catch(Exception e){
-			if(_wsName == null || _uddiURL == null) throw new BrokerClientException("Broker not found");
-			establishConnection();
+			try {
+				establishConnection();
+			} catch (BrokerClientException e1) {}
 			return _port.ping(name);
 		}
 	}
