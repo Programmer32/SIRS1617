@@ -1,5 +1,6 @@
 package pt.upa.broker.ws;
 
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -86,22 +87,37 @@ public class BrokerManager {
 	private static final String[] SUL = { "Setúbal", "Évora", "Portalegre", "Beja", "Faro" };
 	
 	private BrokerManager(){}
+	
 	public BrokerManager(String uddiURL, String name, String url, EndpointManager endpointManager) throws JAXRException{
 		Dialog.IO().debug(this.getClass().getSimpleName(), "Creating instance");
+		
 		EndpointManager endpoint = new EndpointManager(uddiURL);
 
 		getInstance()._uddiURL = uddiURL;
 		getInstance()._wsName = name;
 		getInstance()._wsURL = url;
 		getInstance()._endpoint = endpointManager;
-		if(endpoint.masterAlive(name))
+		
+		//Checks if master is alive
+		if(endpoint.masterAlive(name)){
 			try {
-				register();
+				//register as slave is masters is alive
+				//if it throws an exception while registering as slave, it will become master
+				Dialog.IO().debug(this.getClass().getSimpleName(), "Registering as Slave");
+				registerAsSlave();
 			} catch (BrokerClientException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				Dialog.IO().debug(this.getClass().getSimpleName(), "Error while registering as slave");
+				Dialog.IO().debug(this.getClass().getSimpleName(), "Becoming master");
+				becomeMaster();
+				Dialog.IO().debug(this.getClass().getSimpleName(), "Master Created");
 			}
-		else becomeMaster();
+		}
+		//register as master if master is dead
+		else{
+			Dialog.IO().debug(this.getClass().getSimpleName(), "Becoming master");
+			becomeMaster();
+			Dialog.IO().debug(this.getClass().getSimpleName(), "Master Created");
+		}
 		Dialog.IO().debug(this.getClass().getSimpleName(), "Created instance");
 	}
 	
@@ -110,11 +126,17 @@ public class BrokerManager {
 	 * @throws JAXRException 
 	 */
 	public void becomeMaster() throws JAXRException{
-		Dialog.IO().debug(this.getClass().getSimpleName(), "Becoming master");
+		Dialog.IO().debug("becomeMaster", "Becoming master");
 		getInstance()._master = true;
+		Dialog.IO().debug("becomeMaster", "Port: " + getInstance()._port);
+		Dialog.IO().debug("becomeMaster", "WebService Name: " + getInstance()._wsName);
+		Dialog.IO().debug("becomeMaster", "WebService URL: " + getInstance()._wsURL);
 		getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL);
-		String name = getInstance()._wsURL;
-		AuthenticationHandler.setAuthor(name);
+		
+		//Sets Author on AuthenticationHandler for messages sent by this app
+		//This is needed to check authenticity of messages
+		AuthenticationHandler.setAuthor(getInstance()._wsName + "@" + getInstance()._wsURL);
+
 	}
 	
 	/**
@@ -122,12 +144,21 @@ public class BrokerManager {
 	 * @throws JAXRException 
 	 * @throws BrokerClientException 
 	 */
-	public void register() throws JAXRException, BrokerClientException{
+	public void registerAsSlave() throws BrokerClientException{
+		Dialog.IO().debug("becomeMaster", "Becoming slave");
 		getInstance()._master = false;
-		getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL + "_Slave");
-		BrokerClient client = new BrokerClient(getInstance()._uddiURL, getInstance()._wsURL);
-		client.addSlave(getInstance()._wsURL);
+		try{
+			Dialog.IO().debug("becomeMaster", "Publishing WebService as slave");
+			getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL + "_Slave");
+			Dialog.IO().debug("becomeMaster", "Creating BrokerClient ");
+			new BrokerClient(getInstance()._uddiURL, getInstance()._wsURL).addSlave(getInstance()._wsURL);
+			Dialog.IO().debug("becomeMaster", "Added as slave on Master Broker");
+		}catch(JAXRException e){
+			Dialog.IO().debug("becomeMaster", "Error on connecting to broker master");
+			throw new BrokerClientException("Could not connect to Broker Master");
+		}
 	}
+	
 	public void stop() throws JAXRException{
 		Dialog.IO().debug("BrokerManager.stop", "Endpoint is going to unpublish");
 		getInstance()._endpoint.unpublish();
@@ -423,6 +454,7 @@ public class BrokerManager {
 	public void addSlave(String endpoint){
     	Dialog.IO().debug("addSlave", "addSlave");
 		_brokerSlaves.add(endpoint);
+		Dialog.IO().debug("addSlave", "Slave added with endpoind: " + endpoint);
     }
     
 }

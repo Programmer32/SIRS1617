@@ -124,16 +124,24 @@ public class EndpointManager {
 		
 	}
 	public boolean masterAlive(String name) throws JAXRException {
+		Dialog.IO().debug("masterAlive","Checking if master is alive: " + name);
 		try{
-			if(_uddiNaming == null) _uddiNaming = new UDDINaming(_uddiURL);
+			if(_uddiNaming == null){
+				_uddiNaming = new UDDINaming(_uddiURL);
+			}
 			String endpoint = _uddiNaming.lookup(name);
-			if(endpoint == null) return false;
+			if(endpoint == null){
+				Dialog.IO().debug("masterAlive","There is no such endpoint for this webservice: " + name);
+				return false;
+			}
 			BrokerClient client = new BrokerClient(endpoint);
 			client.ping(name);
+			Dialog.IO().debug("masterAlive","Master is alive");
 			return true;
 		}catch(JAXRException | BrokerClientException e){
+			Dialog.IO().debug("masterAlive","Error while connecting to master: " + e.getMessage());
 			return false;
-		}		
+		}
 	}
 	
 	public void getMaster(String name) throws JAXRException {

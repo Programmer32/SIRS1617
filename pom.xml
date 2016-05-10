@@ -10,7 +10,7 @@
   <modules>
 	<module>ui</module>
 	<module>uddi-naming</module>
-	<module>common-handlers</module>
+	<module>ws-handlers</module>
 	<module>transporter-ws</module>
 	<module>transporter-ws-cli</module>
 	<module>broker-ws</module>
