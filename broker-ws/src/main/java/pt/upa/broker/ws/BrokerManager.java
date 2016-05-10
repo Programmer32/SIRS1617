@@ -16,6 +16,7 @@ import javax.xml.registry.JAXRException;
 import javax.xml.ws.RequestWrapper;
 import javax.xml.ws.ResponseWrapper;
 
+import example.ws.handler.AuthenticationHandler;
 import pt.upa.broker.ws.InvalidPriceFault;
 import pt.upa.broker.ws.InvalidPriceFault_Exception;
 import pt.upa.broker.ws.TransportStateView;
@@ -112,6 +113,8 @@ public class BrokerManager {
 		Dialog.IO().debug(this.getClass().getSimpleName(), "Becoming master");
 		getInstance()._master = true;
 		getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL);
+		String name = getInstance()._wsURL;
+		AuthenticationHandler.setAuthor(name);
 	}
 	
 	/**

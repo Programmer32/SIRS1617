@@ -8,6 +8,7 @@ import java.util.TimerTask;
 
 import javax.xml.registry.JAXRException;
 
+import example.ws.handler.AuthenticationHandler;
 import pt.upa.ui.Dialog;
 
 public class TransporterManager {
@@ -63,8 +64,12 @@ public class TransporterManager {
 		Dialog.IO().debug(this.getClass().getSimpleName(), "Created instance");
 	}
 	public void publish() throws JAXRException{
+	
 		getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL);
+		String name = getInstance()._wsURL;
+		AuthenticationHandler.setAuthor(name);
 	}
+	
 	public void stop() throws JAXRException{
 		Dialog.IO().debug("BrokerManager.stop", "Endpoint is going to unpublish");
 		_exit = true;

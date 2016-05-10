@@ -1,5 +1,5 @@
 //package main.java.pt.upa.handlers;  
-package pt.upa.handlers;
+package example.ws.handler;
 
 
 import static javax.xml.bind.DatatypeConverter.printHexBinary;
@@ -42,7 +42,7 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
-import pt.upa.ui.Dialog;
+//import pt.upa.ui.Dialog;
 
 
 
@@ -61,6 +61,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	public static final String AUTHOR_HEADER    = "author_header";
 	public static final String AUTHOR_NAMESPACE = DIGEST_NAMESPACE;
 	public static final String AUTHOR_PREFIX    = "e";
+
+	public static 		String MESSAGE_AUTHOR;
 	
 	public static final String CA_CERTIFICATE_FILE = "./src/main/resources/ca.pem";
 	public static final String CIPHER_MODE = "RSA/ECB/PKCS1Padding";
@@ -73,6 +75,10 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	
 	public Set<QName> getHeaders() {
 		return null;
+	}
+	
+	public static void setAuthor(String name){
+		AuthenticationHandler.MESSAGE_AUTHOR = name;
 	}
 
 	public boolean handleMessage(SOAPMessageContext smc) {
@@ -169,7 +175,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 			SOAPHeaderElement elementDigest = sHeader.addHeaderElement(nameDigest);
 
 			elementNounce.addTextNode(Instant.now().toEpochMilli() +NOUNCE_DELIMITER+ ++counter);
-			elementAuthor.addTextNode(_author);
+			elementAuthor.addTextNode(MESSAGE_AUTHOR);
 			
 			 //Sign with private Key
 			KeyPair keys = read("./src/main/resources/pub.key","./src/main/resources/priv.key");
@@ -308,7 +314,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 		SOAPElement elementAuthor = getElement(sHeader,nameAuthor);
 		
 		String author = elementAuthor.getTextContent();
-		Dialog.IO().print(" Author : " + author + " ");
+		//Dialog.IO().print(" Author : " + author + " ");
+		System.out.print(" Author : " + author + " ");
 		
 		//Verifying the nounce was issue recently
 		String nounce = elementNounce.getTextContent();
@@ -318,9 +325,12 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 		
 		long now = Instant.now().toEpochMilli();
 		long difference = now - expireDateLong;
-		Dialog.IO().debug("\nnow : " + now);
-		Dialog.IO().debug("beg : " + expireDateStr);
-		Dialog.IO().debug("dif : " + difference);
+//		Dialog.IO().debug("\nnow : " + now);
+//		Dialog.IO().debug("beg : " + expireDateStr);
+//		Dialog.IO().debug("dif : " + difference);
+		System.out.println("\nnow : " + now);
+		System.out.println("beg : " + expireDateStr);
+		System.out.println("dif : " + difference);
 		
 		//if more than 30 seconds had passed
 		if(Math.abs(difference) > DIFFERENCE_SECONDS * 1000){
