@@ -213,6 +213,6 @@ public class BrokerPort implements BrokerPortType {
         @WebParam(name = "id", targetNamespace = "")
         int id){
     	Dialog.IO().debug("pingSlave", "Pinging slave");
-    	BrokerManager.getInstance().pingSlave(0);    	
+    	BrokerManager.getInstance().pingSlave(id);    	
     }
 }

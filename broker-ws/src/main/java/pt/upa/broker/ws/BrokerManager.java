@@ -50,7 +50,7 @@ public class BrokerManager {
 	
 	private static final int TIMEOUT = 500;
 	
-	private ArrayList<String> _brokerSlaves;
+	private Map<String, BrokerClient> _brokerSlaves;
 	
 	private String _uddiURL;
 	private String _wsName;
@@ -106,7 +106,7 @@ public class BrokerManager {
 		getInstance()._wsName = name;
 		getInstance()._wsURL = url;
 		getInstance()._endpoint = endpointManager;
-		getInstance()._brokerSlaves = new ArrayList<String>();
+		getInstance()._brokerSlaves = new HashMap<String, BrokerClient>();
 		
 		//Checks if master is alive
 		if(endpoint.masterAlive(name)){
@@ -141,6 +141,7 @@ public class BrokerManager {
 		Dialog.IO().debug("becomeMaster", "Port: " + getInstance()._port);
 		Dialog.IO().debug("becomeMaster", "WebService Name: " + getInstance()._wsName);
 		Dialog.IO().debug("becomeMaster", "WebService URL: " + getInstance()._wsURL);
+		getInstance()._endpoint.unpublish();
 		getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL);
 		
 		//Sets Author on AuthenticationHandler for messages sent by this app
@@ -180,7 +181,7 @@ public class BrokerManager {
 		
 		//Needs to check ping frmo Broker Master
 		getInstance()._timerSlave = new Timer();
-		getInstance()._timerSlave.schedule(new BecomeMaster(),  new Double(BrokerManager.TIMEOUT * 1.1).intValue());
+		getInstance()._timerSlave.schedule(new BecomeMaster(),  new Double(BrokerManager.TIMEOUT * 20).intValue());
 	}
 	
 	public void stop() throws JAXRException{
@@ -485,7 +486,11 @@ public class BrokerManager {
 
 	public void addSlave(String endpoint){
     	Dialog.IO().debug("addSlave", "addSlave");
-		_brokerSlaves.add(endpoint);
+		try {
+			_brokerSlaves.put(endpoint, new BrokerClient(endpoint));
+		} catch (BrokerClientException e) {
+			Dialog.IO().debug("addSlave", "Slave not added with endpoind: " + endpoint);
+		}
 		Dialog.IO().debug("addSlave", "Slave added with endpoind: " + endpoint);
     }
 	
@@ -507,21 +512,24 @@ public class BrokerManager {
 		@Override
 		public void run() {
 			Dialog.IO().debug("BecomeMaster", "I'm becoming master");
+			try {
+				getInstance().becomeMaster();
+			} catch (JAXRException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			//TODO
 		}
 	}
+	
 	private class SendImAlive extends TimerTask{
 		@Override
 		public void run() {
 			Dialog.IO().debug("SendImAlive", "I'm running");
-			for(String s : getInstance()._brokerSlaves){
+			for(String s : getInstance()._brokerSlaves.keySet()){
 				Dialog.IO().debug("SendImAlive", s);
-				try {
-					new BrokerClient(s).pingSlave(0);
-				} catch (BrokerClientException e) {
-					//Can't ping slave. removing from slaves lists
-					getInstance()._brokerSlaves.remove(s);
-				}
+				BrokerClient c = getInstance()._brokerSlaves.get(s);
+				if(c != null) c.pingSlave(0);
 			}
 			//TODO
 		}
