@@ -60,7 +60,11 @@ public class BrokerManager {
 	private BrokerPort _port;
 	private EndpointManager _endpoint;
 	private Map<String, TransportView> _transports;
+	
+	private BrokerClient _brokerMaster;
+	
 	private Timer _timer;
+	private Timer _timerSlave; ///Timer used to move from Slave to MasterMode
 	private boolean _master;
 	
 	private static BrokerManager _broker;
@@ -141,6 +145,9 @@ public class BrokerManager {
 		//This is needed to check authenticity of messages
 		AuthenticationHandler.setAuthor(getInstance()._wsName + "@" + getInstance()._wsURL);
 
+		//Needs to disable check ping from Master
+		//TODO
+		
 		//Needs to start ping broker slaves
 		getInstance()._timer = new Timer();
 		getInstance()._timer.schedule(new SendImAlive(), 0, 500);
@@ -160,16 +167,27 @@ public class BrokerManager {
 			getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName + "_Slave", getInstance()._wsURL);
 			Dialog.IO().debug("registerAsSlave", "Creating BrokerClient ");
 			
-			new BrokerClient(getInstance()._uddiURL, getInstance()._wsName).addSlave(getInstance()._wsURL);
+			getInstance()._brokerMaster = new BrokerClient(getInstance()._uddiURL, getInstance()._wsName);
+			getInstance()._brokerMaster.addSlave(getInstance()._wsURL);
 			
 			Dialog.IO().debug("registerAsSlave", "Added as slave on Master Broker");
 		}catch(JAXRException e){
 			Dialog.IO().debug("registerAsSlave", "Error on connecting to broker master");
 			throw new BrokerClientException("Could not connect to Broker Master");
 		}
+		
+		//Needs to check ping frmo Broker Master
 	}
 	
 	public void stop() throws JAXRException{
+		if(!getInstance()._master){
+			Dialog.IO().debug("BrokerManager.stop", "It's going to be removed from BrokerMaster");
+			getInstance()._brokerMaster.addSlave(getInstance()._wsURL);
+			Dialog.IO().debug("BrokerManager.stop", "Removed from BrokerMaster");	
+			getInstance()._timerSlave.cancel();		
+		}else{
+			getInstance()._timer.cancel();
+		}
 		Dialog.IO().debug("BrokerManager.stop", "Endpoint is going to unpublish");
 		getInstance()._endpoint.unpublish();
 		Dialog.IO().debug("BrokerManager.stop", "Endpoint has unpublished WebService");
@@ -461,13 +479,20 @@ public class BrokerManager {
     	//TODO
     }
 
-	public AddSlaveResponse addSlave(String endpoint){ 
+	public AddSlaveResponse addSlave(String endpoint){
     	Dialog.IO().debug("addSlave", "addSlave");
 		_brokerSlaves.add(endpoint);
 		Dialog.IO().debug("addSlave", "Slave added with endpoind: " + endpoint);
-		return null;
+		return new AddSlaveResponse();
     }
 	
+	public RemoveSlaveResponse removeSlave(String endpoint){
+    	Dialog.IO().debug("removeSlave", "removeSlave endpoint");
+		_brokerSlaves.remove(endpoint);
+		Dialog.IO().debug("removeSlave", "Slave removed with endpoind: " + endpoint);
+		return new RemoveSlaveResponse();
+		
+	}
 	private class SendImAlive extends TimerTask{
 		@Override
 		public void run() {

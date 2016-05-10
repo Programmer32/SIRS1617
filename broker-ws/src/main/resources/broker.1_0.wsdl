@@ -197,6 +197,21 @@
             		</xs:sequence>
             	</xs:complexType>
             </xs:element>
+            <xs:element name="removeSlave">
+            	<xs:complexType>
+            		<xs:sequence>
+
+            			<xs:element name="endpoint" type="xs:string"></xs:element>
+            		</xs:sequence>
+            	</xs:complexType>
+            </xs:element>
+            <xs:element name="removeSlaveResponse">
+            	<xs:complexType>
+            		<xs:sequence>
+
+            		</xs:sequence>
+            	</xs:complexType>
+            </xs:element>
         </xs:schema>
     </types>
 
@@ -265,6 +280,12 @@
     <message name="addSlaveResponse">
     	<part name="parameters" element="tns:addSlaveResponse"></part>
     </message>
+    <message name="removeSlaveRequest">
+    	<part name="parameters" element="tns:removeSlave"></part>
+    </message>
+    <message name="removeSlaveResponse">
+    	<part name="parameters" element="tns:removeSlaveResponse"></part>
+    </message>
     <portType name="BrokerPortType">
 
         <operation name="ping">
@@ -327,6 +348,10 @@
             <output
                 wsam:Action="http://ws.broker.upa.pt/BrokerPort/clearTransportsResponse"
                 message="tns:clearTransportsResponse" />
+        </operation>
+        <operation name="removeSlave">
+        	<input message="tns:removeSlaveRequest"></input>
+        	<output message="tns:removeSlaveResponse"></output>
         </operation>
     </portType>
 
