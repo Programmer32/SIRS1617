@@ -345,7 +345,7 @@ public class BrokerManager {
 		        	
 		        	//Needs to update all slave brokers
 		        	for(String s : getInstance()._brokerSlaves.keySet()){
-		        		getInstance()._brokerSlaves.get(s).updateJob(id, transport);
+		        		//getInstance()._brokerSlaves.get(s).updateJob(id, transport);
 		        	}
 		        	break;
 		    	}

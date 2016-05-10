@@ -89,6 +89,7 @@ public class BrokerClient {
 		try{
 			return _port.ping(name);
 		}catch(Exception e){
+			if(_wsName == null || _uddiURL == null) throw new BrokerClientException("Broker not found");
 			establishConnection();
 			return _port.ping(name);
 		}
