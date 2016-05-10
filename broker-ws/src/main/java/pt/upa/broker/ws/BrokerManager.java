@@ -182,7 +182,7 @@ public class BrokerManager {
 	public void stop() throws JAXRException{
 		if(!getInstance()._master){
 			Dialog.IO().debug("BrokerManager.stop", "It's going to be removed from BrokerMaster");
-			getInstance()._brokerMaster.addSlave(getInstance()._wsURL);
+			getInstance()._brokerMaster.removeSlave(getInstance()._wsURL);
 			Dialog.IO().debug("BrokerManager.stop", "Removed from BrokerMaster");	
 			getInstance()._timerSlave.cancel();		
 		}else{
