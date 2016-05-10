@@ -109,4 +109,8 @@ public class BrokerClient {
 	public void updateJob(String origin, String destination, int price, String id, String companyID, String companyName){
 		_port.updateJob(origin, destination, price, id, companyID, companyName);
 	}
+	
+	public void pingSlave(int a){
+		_port.pingSlave(a);
+	}
 }

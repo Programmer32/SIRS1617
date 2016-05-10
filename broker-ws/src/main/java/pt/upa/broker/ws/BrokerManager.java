@@ -499,8 +499,8 @@ public class BrokerManager {
 		Dialog.IO().debug("pingSlave", "Master just pinged me. It's still alive");
 		getInstance()._timerSlave.cancel();
 		getInstance()._timerSlave = new Timer();
-		getInstance()._timerSlave.schedule(new BecomeMaster(),  new Double(BrokerManager.TIMEOUT * 1.1).intValue());
-		Dialog.IO().debug("pingSlave", "Waiting again during " + new Double(BrokerManager.TIMEOUT * 1.1).intValue() + " seconds");
+		getInstance()._timerSlave.schedule(new BecomeMaster(),  new Double(BrokerManager.TIMEOUT * 2).intValue());
+		Dialog.IO().debug("pingSlave", "Waiting again during " + new Double(BrokerManager.TIMEOUT * 2).intValue() + " seconds");
 	}
 	
 	private class BecomeMaster extends TimerTask {
@@ -516,6 +516,12 @@ public class BrokerManager {
 			Dialog.IO().debug("SendImAlive", "I'm running");
 			for(String s : getInstance()._brokerSlaves){
 				Dialog.IO().debug("SendImAlive", s);
+				try {
+					new BrokerClient(s).pingSlave(0);
+				} catch (BrokerClientException e) {
+					//Can't ping slave. removing from slaves lists
+					getInstance()._brokerSlaves.remove(s);
+				}
 			}
 			//TODO
 		}
