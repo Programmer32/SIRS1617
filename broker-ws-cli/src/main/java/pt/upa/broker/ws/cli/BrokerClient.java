@@ -64,7 +64,7 @@ public class BrokerClient {
 		
 		if (endpointAddress == null){
 			Dialog.IO().debug("establishConneciton", "Not found!");
-			throw new BrokerClientException("Service with name BrokerWebService not found on UDDI at http://localhost:9090");
+			throw new BrokerClientException("Service with name BrokerWebService not found on UDDI at "+ _uddiURL);
 		}else{
 			System.out.printf("Found %s%n", endpointAddress);
 		}
@@ -78,7 +78,7 @@ public class BrokerClient {
 			requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
 				endpointAddress);
 		}catch(Exception e){
-			throw new BrokerClientException("Service with name BrokerWebService not found on UDDI at http://localhost:9090");
+			throw new BrokerClientException("Service with name BrokerWebService not found on UDDI at " + _uddiURL);
 		}
 	}
 	
