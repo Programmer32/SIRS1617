@@ -151,7 +151,9 @@ public class BrokerManager {
 			Dialog.IO().debug("becomeMaster", "Publishing WebService as slave");
 			getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL + "_Slave");
 			Dialog.IO().debug("becomeMaster", "Creating BrokerClient ");
+			
 			new BrokerClient(getInstance()._uddiURL, getInstance()._wsURL).addSlave(getInstance()._wsURL);
+			
 			Dialog.IO().debug("becomeMaster", "Added as slave on Master Broker");
 		}catch(JAXRException e){
 			Dialog.IO().debug("becomeMaster", "Error on connecting to broker master");

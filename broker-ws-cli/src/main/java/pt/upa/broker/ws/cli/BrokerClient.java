@@ -56,14 +56,15 @@ public class BrokerClient {
 		String endpointAddress;
 		try{
 			uddiNaming = new UDDINaming(_uddiURL);
+			Dialog.IO().debug("establishConnection", "Searching WebService: " + _wsName);
 			endpointAddress = uddiNaming.lookup(_wsName);
-		}catch(Exception e){
 			
+		}catch(Exception e){
 			throw new BrokerClientException("Client failed lookup on UDDI",e);
 		}
 		
 		if (endpointAddress == null){
-			Dialog.IO().debug("establishConneciton", "Not found!");
+			Dialog.IO().debug("establishConnection", "Not found!");
 			throw new BrokerClientException("Service with name BrokerWebService not found on UDDI at "+ _uddiURL);
 		}else{
 			System.out.printf("Found %s%n", endpointAddress);

@@ -89,7 +89,7 @@ public class EndpointManager {
 			Dialog.IO().debug("publish", "Starting " + url);
 			_endpoint.publish(url);
 			Dialog.IO().debug("publish", "Started");
-	
+			
 			// publish to UDDI
 			Dialog.IO().debug("publish", "Publishing '" + wsName + "' to UDDI at " + _uddiURL);
 			
