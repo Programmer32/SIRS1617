@@ -48,6 +48,8 @@ public class BrokerManager {
 		
 	}
 	
+	private static final int TIMEOUT = 500;
+	
 	private ArrayList<String> _brokerSlaves;
 	
 	private String _uddiURL;
@@ -150,7 +152,7 @@ public class BrokerManager {
 		
 		//Needs to start ping broker slaves
 		getInstance()._timer = new Timer();
-		getInstance()._timer.schedule(new SendImAlive(), 0, 500);
+		getInstance()._timer.schedule(new SendImAlive(), 0, BrokerManager.TIMEOUT);
 	}
 	
 	/**
@@ -177,12 +179,14 @@ public class BrokerManager {
 		}
 		
 		//Needs to check ping frmo Broker Master
+		getInstance()._timerSlave = new Timer();
+		getInstance()._timerSlave.schedule(new BecomeMaster(),  new Double(BrokerManager.TIMEOUT * 1.1).intValue());
 	}
 	
 	public void stop() throws JAXRException{
 		if(!getInstance()._master){
 			Dialog.IO().debug("BrokerManager.stop", "It's going to be removed from BrokerMaster");
-			getInstance()._brokerMaster.removeSlave(getInstance()._wsURL);
+			//getInstance()._brokerMaster.removeSlave(getInstance()._wsURL);
 			Dialog.IO().debug("BrokerManager.stop", "Removed from BrokerMaster");	
 			getInstance()._timerSlave.cancel();		
 		}else{
@@ -479,19 +483,32 @@ public class BrokerManager {
     	//TODO
     }
 
-	public AddSlaveResponse addSlave(String endpoint){
+	public void addSlave(String endpoint){
     	Dialog.IO().debug("addSlave", "addSlave");
 		_brokerSlaves.add(endpoint);
 		Dialog.IO().debug("addSlave", "Slave added with endpoind: " + endpoint);
-		return new AddSlaveResponse();
     }
 	
-	public RemoveSlaveResponse removeSlave(String endpoint){
+	public void removeSlave(String endpoint){
     	Dialog.IO().debug("removeSlave", "removeSlave endpoint");
 		_brokerSlaves.remove(endpoint);
-		Dialog.IO().debug("removeSlave", "Slave removed with endpoind: " + endpoint);
-		return new RemoveSlaveResponse();
-		
+		Dialog.IO().debug("removeSlave", "Slave removed with endpoind: " + endpoint);		
+	}
+	
+	public void pingSlave(int e){
+		Dialog.IO().debug("pingSlave", "Master just pinged me. It's still alive");
+		getInstance()._timerSlave.cancel();
+		getInstance()._timerSlave = new Timer();
+		getInstance()._timerSlave.schedule(new BecomeMaster(),  new Double(BrokerManager.TIMEOUT * 1.1).intValue());
+		Dialog.IO().debug("pingSlave", "Waiting again during " + new Double(BrokerManager.TIMEOUT * 1.1).intValue() + " seconds");
+	}
+	
+	private class BecomeMaster extends TimerTask {
+		@Override
+		public void run() {
+			Dialog.IO().debug("BecomeMaster", "I'm becoming master");
+			//TODO
+		}
 	}
 	private class SendImAlive extends TimerTask{
 		@Override
@@ -502,8 +519,6 @@ public class BrokerManager {
 			}
 			//TODO
 		}
-		
-		
 	}
     
 }

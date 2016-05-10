@@ -3,6 +3,7 @@ package pt.upa.broker.ws;
 import java.util.List;
 
 import javax.jws.HandlerChain;
+import javax.jws.Oneway;
 import javax.jws.WebMethod;
 import javax.jws.WebParam;
 import javax.jws.WebResult;
@@ -184,5 +185,34 @@ public class BrokerPort implements BrokerPortType {
     	BrokerManager.getInstance().addSlave(endpoint);
     }
     
+    /**
+     * 
+     * @param endpoint
+     */
+    @WebMethod
+    @Oneway
+    @RequestWrapper(localName = "removeSlave", targetNamespace = "http://ws.broker.upa.pt/", className = "pt.upa.broker.ws.RemoveSlave")
+    public void removeSlave(
+        @WebParam(name = "endpoint", targetNamespace = "")
+        String endpoint){
+    	Dialog.IO().debug("removeSlave", "Removing slave from list" + endpoint);
+    	BrokerManager.getInstance().removeSlave(endpoint);
+    	Dialog.IO().debug("removeSlave", "Slave removed from list");
+    }
 
+    
+
+    /**
+     * 
+     * @param id
+     */
+    @WebMethod
+    @Oneway
+    @RequestWrapper(localName = "pingSlave", targetNamespace = "http://ws.broker.upa.pt/", className = "pt.upa.broker.ws.PingSlave")
+    public void pingSlave(
+        @WebParam(name = "id", targetNamespace = "")
+        int id){
+    	Dialog.IO().debug("pingSlave", "Pinging slave");
+    	BrokerManager.getInstance().pingSlave(0);    	
+    }
 }
