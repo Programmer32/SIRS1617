@@ -145,18 +145,18 @@ public class BrokerManager {
 	 * @throws BrokerClientException 
 	 */
 	public void registerAsSlave() throws BrokerClientException{
-		Dialog.IO().debug("becomeMaster", "Becoming slave");
+		Dialog.IO().debug("registerAsSlave", "Becoming slave");
 		getInstance()._master = false;
 		try{
-			Dialog.IO().debug("becomeMaster", "Publishing WebService as slave");
+			Dialog.IO().debug("registerAsSlave", "Publishing WebService as slave");
 			getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL + "_Slave");
-			Dialog.IO().debug("becomeMaster", "Creating BrokerClient ");
+			Dialog.IO().debug("registerAsSlave", "Creating BrokerClient ");
 			
 			new BrokerClient(getInstance()._uddiURL, getInstance()._wsURL).addSlave(getInstance()._wsURL);
 			
-			Dialog.IO().debug("becomeMaster", "Added as slave on Master Broker");
+			Dialog.IO().debug("registerAsSlave", "Added as slave on Master Broker");
 		}catch(JAXRException e){
-			Dialog.IO().debug("becomeMaster", "Error on connecting to broker master");
+			Dialog.IO().debug("registerAsSlave", "Error on connecting to broker master");
 			throw new BrokerClientException("Could not connect to Broker Master");
 		}
 	}
