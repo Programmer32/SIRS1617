@@ -189,9 +189,11 @@ public class BrokerManager {
 			Dialog.IO().debug("BrokerManager.stop", "It's going to be removed from BrokerMaster");
 			//getInstance()._brokerMaster.removeSlave(getInstance()._wsURL);
 			Dialog.IO().debug("BrokerManager.stop", "Removed from BrokerMaster");	
-			getInstance()._timerSlave.cancel();		
+			getInstance()._timerSlave.cancel();
+			getInstance()._timer.cancel();
 		}else{
 			getInstance()._timer.cancel();
+			getInstance()._timerSlave.cancel();
 		}
 		Dialog.IO().debug("BrokerManager.stop", "Endpoint is going to unpublish");
 		getInstance()._endpoint.unpublish();
