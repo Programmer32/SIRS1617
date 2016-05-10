@@ -150,7 +150,8 @@ public class BrokerManager {
 		getInstance()._master = false;
 		try{
 			Dialog.IO().debug("registerAsSlave", "Publishing WebService as slave");
-			getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL + "_Slave");
+			//This needs to be fixed!!! Only one slave broker allowed!!!
+			getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName + "_Slave", getInstance()._wsURL);
 			Dialog.IO().debug("registerAsSlave", "Creating BrokerClient ");
 			
 			new BrokerClient(getInstance()._uddiURL, getInstance()._wsName).addSlave(getInstance()._wsURL);
