@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -52,13 +53,14 @@ public class BrokerManager {
 	private String _uddiURL;
 	private String _wsName;
 	private String _wsURL;
+	private Random _random;
 	
 	private Map<String, IDConverter> _ids;
 	
 	private BrokerPort _port;
 	private EndpointManager _endpoint;
 	private Map<String, TransportView> _transports;
-	
+	private Timer _timer;
 	private boolean _master;
 	
 	private static BrokerManager _broker;
@@ -72,6 +74,7 @@ public class BrokerManager {
 			try {
 				_broker._master = false;
 				_broker._port = new BrokerPort();
+				_broker._random = new Random();
 				_broker._ids = new HashMap<String, IDConverter>();
 			} catch (JAXRException e) {
 				// TODO Auto-generated catch block
@@ -138,6 +141,9 @@ public class BrokerManager {
 		//This is needed to check authenticity of messages
 		AuthenticationHandler.setAuthor(getInstance()._wsName + "@" + getInstance()._wsURL);
 
+		//Needs to start ping broker slaves
+		getInstance()._timer = new Timer();
+		getInstance()._timer.schedule(new SendImAlive(), 0, 500);
 	}
 	
 	/**
@@ -455,11 +461,24 @@ public class BrokerManager {
     	//TODO
     }
 
-	public AddSlaveResponse addSlave(String endpoint){
+	public AddSlaveResponse addSlave(String endpoint){ 
     	Dialog.IO().debug("addSlave", "addSlave");
 		_brokerSlaves.add(endpoint);
 		Dialog.IO().debug("addSlave", "Slave added with endpoind: " + endpoint);
 		return null;
     }
+	
+	private class SendImAlive extends TimerTask{
+		@Override
+		public void run() {
+			Dialog.IO().debug("SendImAlive", "I'm running");
+			for(String s : getInstance()._brokerSlaves){
+				Dialog.IO().debug("SendImAlive", s);
+			}
+			//TODO
+		}
+		
+		
+	}
     
 }

@@ -1,5 +1,6 @@
 package pt.upa.broker.ws;
 
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -8,6 +9,8 @@ import java.util.Map;
 
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.Endpoint;
+
+import com.sun.xml.ws.client.ClientTransportException;
 
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.broker.ws.cli.BrokerClient;
@@ -123,7 +126,7 @@ public class EndpointManager {
 		Dialog.IO().debug("EndManager.unpublish", "Endpoint has unpublished WebService");
 		
 	}
-	public boolean masterAlive(String name) throws JAXRException {
+	public boolean masterAlive(String name) {
 		Dialog.IO().debug("masterAlive","Checking if master is alive: " + name);
 		try{
 			if(_uddiNaming == null){
@@ -134,11 +137,14 @@ public class EndpointManager {
 				Dialog.IO().debug("masterAlive","There is no such endpoint for this webservice: " + name);
 				return false;
 			}
+			Dialog.IO().debug("masterAlive","Creating BrokerClient: " + endpoint);
 			BrokerClient client = new BrokerClient(endpoint);
+			Dialog.IO().debug("masterAlive","BrokerClient created");
+			Dialog.IO().debug("masterAlive","Pinging BrokerMaster");
 			client.ping(name);
 			Dialog.IO().debug("masterAlive","Master is alive");
 			return true;
-		}catch(JAXRException | BrokerClientException e){
+		}catch(JAXRException | BrokerClientException | ClientTransportException e){
 			Dialog.IO().debug("masterAlive","Error while connecting to master: " + e.getMessage());
 			return false;
 		}
