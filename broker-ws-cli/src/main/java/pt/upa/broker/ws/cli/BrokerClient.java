@@ -55,6 +55,7 @@ public class BrokerClient {
 		UDDINaming uddiNaming;
 		String endpointAddress;
 		try{
+			Dialog.IO().debug("establishConnection", "Connecting to uddi: " + _uddiURL);
 			uddiNaming = new UDDINaming(_uddiURL);
 			Dialog.IO().debug("establishConnection", "Searching WebService: " + _wsName);
 			endpointAddress = uddiNaming.lookup(_wsName);
