@@ -85,8 +85,13 @@ public class BrokerClient {
 		}
 	}
 	
-	public String ping(String name){
-		return _port.ping(name);
+	public String ping(String name) throws BrokerClientException{
+		try{
+			return _port.ping(name);
+		}catch(Exception e){
+			establishConnection();
+			return _port.ping(name);
+		}
 	}
 	
 	public String requestTransport(String origin, String destination, int price) throws InvalidPriceFault_Exception, UnavailableTransportFault_Exception, UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception{
