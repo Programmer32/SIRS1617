@@ -17,6 +17,7 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
+import pt.upa.ui.Dialog;
 /**
  *  This SOAPHandler outputs the contents of
  *  inbound and outbound messages.
@@ -53,9 +54,13 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
         Boolean outbound = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
         if (outbound) {
-            System.out.println("\u001B[33mOutbound SOAP message:\u001B[0m");
+        	Dialog.IO().yellow();
+        	Dialog.IO().debug("Outbound SOAP message:");
+        	Dialog.IO().white();
         } else {
-            System.out.println("\u001B[34mInbound SOAP message:\u001B[0m");
+        	Dialog.IO().cyan();
+        	Dialog.IO().debug("Inbound SOAP message:");
+        	Dialog.IO().white();
         }
 
         SOAPMessage message = smc.getMessage();
@@ -64,8 +69,7 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
         	message.writeTo(out);
         	String strMsg = new String(out.toByteArray());
         	strMsg = prettyFormat(strMsg);
-        	System.out.printf(strMsg);
-//            message.writeTo(System.out);
+        	Dialog.IO().SOAP(strMsg);
         } catch (Exception e) {
             System.out.printf("Exception in handler: %s%n\n", e);
         }

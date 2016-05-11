@@ -2,15 +2,12 @@
 package example.ws.handler;
 
 
-import static javax.xml.bind.DatatypeConverter.printHexBinary;
-
 import java.io.BufferedInputStream;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
-import java.security.KeyPair;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
@@ -20,7 +17,6 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.Instant;
@@ -28,8 +24,10 @@ import java.util.Iterator;
 import java.util.Set;
 
 import javax.crypto.Cipher;
+import javax.management.RuntimeErrorException;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
+import javax.xml.registry.JAXRException;
 import javax.xml.soap.Name;
 import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPElement;
@@ -43,8 +41,15 @@ import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
-//import pt.upa.ui.Dialog;
+import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
+//import pt.upa.ca.ws.*;
 
+import pt.upa.ca.ws.EntityNotFoundException;
+import pt.upa.ca.ws.EntityNotFoundException_Exception;
+import pt.upa.ca.ws.cli.CAClient;
+import pt.upa.ui.Dialog;
+import sun.misc.BASE64Encoder;
+import sun.misc.BASE64Decoder;
 
 
 public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
@@ -64,22 +69,33 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	public static final String AUTHOR_PREFIX    = "e";
 
 	public static 		String MESSAGE_AUTHOR;
-	public static 		String TRANSPORTER_ID = "";
 	
 	public static final String CA_CERTIFICATE_FILE = "./src/main/resources/ca.pem";
 	public static final String CIPHER_MODE = "RSA/ECB/PKCS1Padding";
 	public static final String DIGEST_MODE = "SHA-512";
 	
-	public static final String NOUNCE_DELIMITER = "/(.)_(.)\\";
+	public static final String NOUNCE_DELIMITER = "/(.)(.)\\";
 	public static final int DIFFERENCE_SECONDS  = 30;
-	
-	public String _author = "autor da mensagem : TODO";
 	
 	public Set<QName> getHeaders() {
 		return null;
 	}
 	
 	public static void setAuthor(String name){
+		String _uddiURL   = "http://localhost:9090" ;
+		String CA_WS_NAME = "CertificateAuthorityWS";
+		UDDINaming _uddiNaming;
+		String endpointAddr = "";
+		CAClient ca_ws = null;
+		try {
+			_uddiNaming = new UDDINaming(_uddiURL);
+			endpointAddr = _uddiNaming.lookup(CA_WS_NAME);
+			ca_ws = new CAClient(endpointAddr);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}; 
+		ca_ws.addEntity(name);
+		Dialog.IO().debug("Register CA","Added new entity: " +name);
 		AuthenticationHandler.MESSAGE_AUTHOR = name;
 	}
 
@@ -100,11 +116,12 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 					System.out.println("\u001B[32mMessage Valid\u001B[0m");
 				} else {
 					System.out.println("\u001B[31mMessage Not Valid\u001B[0m");
+					throw new RuntimeException("Invalid Signature");
 				}
 				return valid;
 			}catch (Exception e){
 				System.out.printf("\u001B[31mFailed to validate message because: %s%n\u001B[0m\n", e);
-				return false;
+				throw new RuntimeException("Invalid Signature");
 			}
 		}
 		return true;
@@ -120,12 +137,21 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	public void close(MessageContext messageContext) {}
 
 	
+	private static String bytes2String(byte[] message){
+		BASE64Encoder encoder = new BASE64Encoder();
+		return encoder.encode(message);
+	}
+	
+	private static byte[] string2Bytes(String message) throws IOException {
+		BASE64Decoder decoder = new BASE64Decoder();
+    	byte[] publicKeyBytes = decoder.decodeBuffer(message);
+    	return publicKeyBytes;
+	}
+	
 	private static byte[] hash(String text) throws NoSuchAlgorithmException {
 		MessageDigest messageDigest = MessageDigest.getInstance(DIGEST_MODE);
-//		System.out.println(messageDigest.getProvider().getInfo());
 		final byte[] plainBytes = text.getBytes();
 
-//		System.out.println("Computing digest ...");
 		messageDigest.update(plainBytes);
 		byte[] digest = messageDigest.digest();
 		
@@ -133,28 +159,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
 	}
 	
-
-	/** auxiliary method to calculate digest from text and cipher it */
-	public static byte[] makeDigitalSignature(String plainText, PrivateKey privKey) throws Exception {
-
-		//Digest the text
-		byte[] digest = hash(plainText); 
-		
-		// get an RSA cipher object
-		Cipher cipher = Cipher.getInstance(CIPHER_MODE);
-
-		// encrypt the plaintext using the private key
-		cipher.init(Cipher.ENCRYPT_MODE, privKey);
-		byte[] cipherDigest = cipher.doFinal(digest);
-
-//		System.out.println("Cipher digest:");
-//		System.out.println(printHexBinary(cipherDigest));
-
-		return cipherDigest;
-	}
-
 	private void signMessage(SOAPMessageContext smc) throws Exception{
-		System.out.printf("\u001B[35mSigning Message\u001B[0m\n");
 		try {
 			// get SOAP envelope
 			SOAPMessage  	   msg = smc.getMessage();
@@ -177,21 +182,130 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 			SOAPHeaderElement elementDigest = sHeader.addHeaderElement(nameDigest);
 
 			elementNounce.addTextNode(Instant.now().toEpochMilli() +NOUNCE_DELIMITER+ ++counter);
+			Dialog.IO().debug("Signing Message_expiration", Instant.now().toEpochMilli() +NOUNCE_DELIMITER+ counter);
 			elementAuthor.addTextNode(MESSAGE_AUTHOR);
+			Dialog.IO().debug("Signing Message_Author", MESSAGE_AUTHOR);
 			
 			 //Sign with private Key
-			KeyPair keys = read("./src/main/resources/pub.key","./src/main/resources/priv.key");
-			byte[] signedBody = makeDigitalSignature(sBody.getTextContent() + elementNounce.getTextContent(), keys.getPrivate());
-			// add value to header element 
-			elementDigest.setTextContent(printHexBinary(signedBody));
-			
+			PrivateKey privKey = read("./src/main/resources/"+MESSAGE_AUTHOR+"priv.key");
+			byte[] signedBody = makeDigitalSignature(sBody.getTextContent() + elementNounce.getTextContent(), privKey);
+ 
+			elementDigest.setTextContent(bytes2String(signedBody));
+			Dialog.IO().debug("Signing Message_Digest", MESSAGE_AUTHOR);
 			
 			//Update Envelope
 			msg.saveChanges();
 		} catch (SOAPException e) {
-			System.out.printf("\u001B[31m\nFailed to add SOAP header because: %s%n\n\u001B[0m", e);
-			return;
+			Dialog.IO().error("Failed to add SOAP header because: " + e.getClass() + " " + e.getMessage());
+			throw new RuntimeException("Soap Error");
 		} 
+	}
+	
+	private boolean validateSignature(SOAPMessageContext smc) throws Exception{
+		Dialog.IO().trace("\u001B[33;1m---Validating Message: \u001B[0m");
+		SOAPMessage msg = smc.getMessage();
+		SOAPPart sPart = msg.getSOAPPart();
+		SOAPEnvelope sEnvelope = sPart.getEnvelope();
+		SOAPBody sBody = sEnvelope.getBody();
+		SOAPHeader sHeader = sEnvelope.getHeader();
+
+		// check header
+		if (sHeader == null) {
+			Dialog.IO().error("Header not found.");
+			throw new RuntimeException("Header not found.");
+		}
+
+		
+		// get Digest element
+		Name nameDigest = sEnvelope.createName(DIGEST_HEADER, DIGEST_PREFIX, DIGEST_NAMESPACE);
+		SOAPElement elementDigest = getElement(sHeader,nameDigest);
+
+		// get Nounce element
+		Name nameNounce = sEnvelope.createName(NOUNCE_HEADER, NOUNCE_PREFIX, NOUNCE_NAMESPACE);
+		SOAPElement elementNounce = getElement(sHeader,nameNounce);
+		
+		Name nameAuthor = sEnvelope.createName(AUTHOR_HEADER, AUTHOR_PREFIX, AUTHOR_NAMESPACE);
+		SOAPElement elementAuthor = getElement(sHeader,nameAuthor);
+		
+		String author = elementAuthor.getTextContent();
+		//Dialog.IO().print(" Author : " + author + " ");
+		Dialog.IO().debug(" Validate_Author " , author);
+		
+		//Verifying the nounce was issue recently
+		String nounce = elementNounce.getTextContent();
+		int separator = nounce.indexOf(NOUNCE_DELIMITER);
+		String expireDateStr = nounce.substring(0, separator);	
+		long  expireDateLong = Long.parseLong(expireDateStr, 10);
+		
+		long now = Instant.now().toEpochMilli();
+		long difference = now - expireDateLong;
+		Dialog.IO().debug("Validate_now" , now+"");
+		Dialog.IO().debug("Validate_beg" , expireDateStr);
+		Dialog.IO().debug("Validate_dif" , difference+"");
+		
+		//if more than 30 seconds had passed
+		if(Math.abs(difference) > DIFFERENCE_SECONDS * 1000){
+			Dialog.IO().error("Nounce Expirated");
+			throw new RuntimeException("Nounce Expirated");
+		}
+		
+		//Get Public Key
+//		KeyPair keys = read("./src/main/resources/pub.key","./src/main/resources/priv.key");
+//		PublicKey pKey = keys.getPublic();
+
+		String _uddiURL   = "http://localhost:9090" ;
+		String CA_WS_NAME = "CertificateAuthorityWS";
+		UDDINaming _uddiNaming = new UDDINaming(_uddiURL);; 
+		String endpointAddr = _uddiNaming.lookup(CA_WS_NAME);
+		CAClient ca_ws = new CAClient(endpointAddr);
+		String key;
+		try{
+			key = ca_ws.getPublicKey(author);
+		} catch( EntityNotFoundException_Exception e) {
+			throw new RuntimeException("Invalid Author");
+		}
+		
+		
+		//Ask CA message's Author's certificate
+//		Certificate certificate = readCertificateFile(CERTIFICATE_FILE);
+////		certificate = CA.getCertificate(String name); TODO
+//		Certificate caCertificate = readCertificateFile(CA_CERTIFICATE_FILE);
+//		PublicKey caPublicKey = caCertificate.getPublicKey();
+
+		//Verify if the received certificate is a valid one!
+//		if(!verifySignedCertificate(certificate, caPublicKey)){
+//			System.out.println("\u001B[31mInvalid Certificate Received\u001B[0m");
+//			return false;
+//		}
+// 		PublicKey pKey = certificate.getPublicKey();
+		
+        byte[] byteKey = string2Bytes(key);
+        X509EncodedKeySpec X509publicKey = new X509EncodedKeySpec(byteKey);
+        KeyFactory kf = KeyFactory.getInstance("RSA");
+
+        PublicKey pKey =  kf.generatePublic(X509publicKey);
+ 		
+		return verifyDigitalSignature(elementDigest.getValue(), sBody.getTextContent() + elementNounce.getTextContent() , pKey);
+	}
+
+	
+	/** auxiliary method to calculate digest from text and cipher it */
+	public static byte[] makeDigitalSignature(String plainText, PrivateKey privKey) throws Exception {
+
+		//Digest the text
+		byte[] digest = hash(plainText); 
+		
+		// get an RSA cipher object
+		Cipher cipher = Cipher.getInstance(CIPHER_MODE);
+
+		// encrypt the plaintext using the private key
+		cipher.init(Cipher.ENCRYPT_MODE, privKey);
+		byte[] cipherDigest = cipher.doFinal(digest);
+
+//		System.out.println("Cipher digest:");
+//		System.out.println(printHexBinary(cipherDigest));
+
+		return cipherDigest;
 	}
 	
 	/**
@@ -233,7 +347,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
 		// decrypt the ciphered digest using the public key (HEADER)
 		cipher.init(Cipher.DECRYPT_MODE, pubKey);
-		byte[] signedBytes = DatatypeConverter.parseHexBinary(receivedDigest); 
+		byte[] signedBytes = string2Bytes(receivedDigest); 
 		byte[] decipheredDigest = cipher.doFinal(signedBytes);
 
 		
@@ -279,99 +393,19 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 		return null;
 	}
 	
+
 	private SOAPElement getElement(SOAPElement sElement, Name name){
 		Iterator<?> itD = sElement.getChildElements(name);
 		// check header element
 		if (!itD.hasNext()) {
-			System.out.printf("Header element %s not found.%n", name.getLocalName());
-			throw new RuntimeException("Header element not found");
+			Dialog.IO().error("Header element "+ name.getLocalName() +" not found.");
+			throw new RuntimeException("Header element "+ name.getLocalName() +" not found");
 		}
 		return (SOAPElement) itD.next();
 	}
 	
-	private boolean validateSignature(SOAPMessageContext smc) throws Exception{
-		System.out.printf("\u001B[33;1m---Validating Message: \u001B[0m");
-		// get SOAP envelope header
-		SOAPMessage msg = smc.getMessage();
-		SOAPPart sPart = msg.getSOAPPart();
-		SOAPEnvelope sEnvelope = sPart.getEnvelope();
-		SOAPBody sBody = sEnvelope.getBody();
-		SOAPHeader sHeader = sEnvelope.getHeader();
-
-		// check header
-		if (sHeader == null) {
-			System.out.println("Header not found.");
-			return false;
-		}
-
-		
-		// get Digest element
-		Name nameDigest = sEnvelope.createName(DIGEST_HEADER, DIGEST_PREFIX, DIGEST_NAMESPACE);
-		SOAPElement elementDigest = getElement(sHeader,nameDigest);
-
-		// get Nounce element
-		Name nameNounce = sEnvelope.createName(NOUNCE_HEADER, NOUNCE_PREFIX, NOUNCE_NAMESPACE);
-		SOAPElement elementNounce = getElement(sHeader,nameNounce);
-		
-		Name nameAuthor = sEnvelope.createName(AUTHOR_HEADER, AUTHOR_PREFIX, AUTHOR_NAMESPACE);
-		SOAPElement elementAuthor = getElement(sHeader,nameAuthor);
-		
-		String author = elementAuthor.getTextContent();
-		//Dialog.IO().print(" Author : " + author + " ");
-		System.out.print(" Author : " + author + " ");
-		
-		//Verifying the nounce was issue recently
-		String nounce = elementNounce.getTextContent();
-		int separator = nounce.indexOf(NOUNCE_DELIMITER);
-		String expireDateStr = nounce.substring(0, separator);	
-		long  expireDateLong = Long.parseLong(expireDateStr, 10);
-		
-		long now = Instant.now().toEpochMilli();
-		long difference = now - expireDateLong;
-//		Dialog.IO().debug("\nnow : " + now);
-//		Dialog.IO().debug("beg : " + expireDateStr);
-//		Dialog.IO().debug("dif : " + difference);
-		System.out.println("\nnow : " + now);
-		System.out.println("beg : " + expireDateStr);
-		System.out.println("dif : " + difference);
-		
-		//if more than 30 seconds had passed
-		if(Math.abs(difference) > DIFFERENCE_SECONDS * 1000){
-			System.out.println("\u001B[31m Nounce Expirated \u001B[0m");
-			return false;
-		}
-		
-		//Get Public Key
-		KeyPair keys = read("./src/main/resources/pub.key","./src/main/resources/priv.key");
-		PublicKey pKey = keys.getPublic();
-		
-		//Ask CA message's Author's certificate
-//		Certificate certificate = readCertificateFile(CERTIFICATE_FILE);
-////		certificate = CA.getCertificate(String name); TODO
-//		Certificate caCertificate = readCertificateFile(CA_CERTIFICATE_FILE);
-//		PublicKey caPublicKey = caCertificate.getPublicKey();
-
-		//Verify if the received certificate is a valid one!
-//		if(!verifySignedCertificate(certificate, caPublicKey)){
-//			System.out.println("\u001B[31mInvalid Certificate Received\u001B[0m");
-//			return false;
-//		}
-// 		PublicKey pKey = certificate.getPublicKey();
-		
-		return verifyDigitalSignature(elementDigest.getValue(), sBody.getTextContent() + elementNounce.getTextContent() , pKey);
-	}
-
-	public static KeyPair read(String publicKeyPath, String privateKeyPath) throws Exception {
-
-//		System.out.println("Reading public key from file " + publicKeyPath + " ...");
-		byte[] pubEncoded = readFile(publicKeyPath);
-
-		X509EncodedKeySpec pubSpec = new X509EncodedKeySpec(pubEncoded);
-		KeyFactory keyFacPub = KeyFactory.getInstance("RSA");
-		PublicKey pub = keyFacPub.generatePublic(pubSpec);
-//		System.out.println(pub);
-
-//		System.out.println("---");
+	
+	public static PrivateKey read(String privateKeyPath) throws Exception {
 
 //		System.out.println("Reading private key from file " + privateKeyPath + " ...");
 		byte[] privEncoded = readFile(privateKeyPath);
@@ -379,9 +413,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 		PKCS8EncodedKeySpec privSpec = new PKCS8EncodedKeySpec(privEncoded);
 		KeyFactory keyFacPriv = KeyFactory.getInstance("RSA");
 		PrivateKey priv = keyFacPriv.generatePrivate(privSpec);
-
-		KeyPair keys = new KeyPair(pub, priv);
-		return keys;
+		return priv; 
 	}	
 	
 	private static byte[] readFile(String path) throws FileNotFoundException, IOException {

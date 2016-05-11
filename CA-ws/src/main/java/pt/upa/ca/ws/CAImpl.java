@@ -1,7 +1,5 @@
 package pt.upa.ca.ws;
 
-import static javax.xml.bind.DatatypeConverter.printHexBinary;
-
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -11,6 +9,8 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import javax.jws.WebService;
+
+import sun.misc.BASE64Encoder;
 
 @WebService(endpointInterface = "pt.upa.ca.ws.CA")
 public class CAImpl implements CA {
@@ -32,25 +32,25 @@ public class CAImpl implements CA {
 		String prefix = "./src/main/resources/" + name;
 		String pub = "";
 		try {
-			pub = write(prefix + "pub.key", prefix + "priv.key");
+			pub = write(prefix + "priv.key");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		pubKeys.put(name, pub);
-		System.out.println( name + " value: " + pub);
+		System.out.println( "\u001B[33;1mCreated: " + name + "\u001B[0m");
 	}
 
 	@Override
 	public String getPublicKey(String name) throws EntityNotFoundException {
-		System.out.println("getPublicKey received: " + name);
+		System.out.println("\u001B[34mgetPublicKey request received: \u001B[0m" + name );
 		return pubKeys.get(name);
 	}
 	
-	public static String write(String publicKeyPath, String privateKeyPath) throws Exception {
+	public static String write(String privateKeyPath) throws Exception {
 
 		// generate RSA key pair
-		System.out.println("Generating RSA keys ...");
+		
 		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
 		keyGen.initialize(1024);
 		KeyPair key = keyGen.generateKeyPair();
@@ -59,10 +59,10 @@ public class CAImpl implements CA {
 //		System.out.println("algorithm: " + key.getPublic().getAlgorithm());
 //		System.out.println("format: " + key.getPublic().getFormat());
 
-		System.out.println("Writing public key to " + publicKeyPath + " ...");
+		//System.out.println("Writing public key to " + publicKeyPath + " ...");
 		byte[] pubEncoded = key.getPublic().getEncoded();
-		writeFile(publicKeyPath, pubEncoded);
-		System.out.println("Done");
+		//writeFile(publicKeyPath, pubEncoded);
+//		System.out.println("Done");
 
 //		System.out.println("---");
 
@@ -73,13 +73,17 @@ public class CAImpl implements CA {
 		System.out.println("Writing private key to '" + privateKeyPath + "' ...");
 		byte[] privEncoded = key.getPrivate().getEncoded();
 		writeFile(privateKeyPath, privEncoded);
-		System.out.println("Done");
-		return printHexBinary(privEncoded);
+		System.out.println("Done with the keys");
+		return bytes2String(pubEncoded);
 	}
 	private static void writeFile(String path, byte[] content) throws FileNotFoundException, IOException {
 		FileOutputStream fos = new FileOutputStream(path);
 		fos.write(content);
 		fos.close();
 	}
-
+	private static String bytes2String(byte[] message){
+		BASE64Encoder encoder = new BASE64Encoder();
+		return encoder.encode(message);
+	}
+	
 }

@@ -17,7 +17,7 @@ public class Dialog {
 	public static final String ANSI_GREEN = "\u001B[32m";
 	public static final String ANSI_YELLOW = "\u001B[33m";
 	public static final String ANSI_BLUE = "\u001B[34m";
-	public static final String ANSI_PURPLE = "\u001B[35m";
+	public static final String ANSI_MAGENT = "\u001B[35m";
 	public static final String ANSI_CYAN = "\u001B[36m";
 	public static final String ANSI_WHITE = "\u001B[37m";
 
@@ -51,7 +51,7 @@ public class Dialog {
 	public void green(){ System.out.print(ANSI_GREEN); }
 	public void yellow(){ System.out.print(ANSI_YELLOW); }
 	public void blue(){ System.out.print(ANSI_BLUE); }
-	public void magent(){ System.out.print(ANSI_PURPLE); }
+	public void magent(){ System.out.print(ANSI_MAGENT); }
 	public void cyan(){ System.out.print(ANSI_CYAN); }
 	public void white(){ System.out.print(ANSI_WHITE); }
 	private void printTag(String s){
