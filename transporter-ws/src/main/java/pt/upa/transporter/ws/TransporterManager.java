@@ -34,38 +34,115 @@ public class TransporterManager {
 	private static final String[] CENTRO = { "Lisboa", "Leiria", "Castelo Branco", "Coimbra", "Aveiro", "Viseu", "Guarda" };
 	private static final String[] SUL = { "Setúbal", "Évora", "Portalegre", "Beja", "Faro" };
 	
+	/**
+	 * This method is used on Singleton design pattern
+	 * 
+	 * @return TransporterManager
+	 */
 	public static TransporterManager getInstance(){
 		if(_transporter == null){
+			Dialog.IO().debug("getInstance", "Singleton not initalized");
+			Dialog.IO().debug("getInstance", "Creating instance of TransporterManager");
 			_transporter = new TransporterManager();
+			Dialog.IO().debug("getInstance", "TransporterManager created");
 			_transporter._exit = false;
+			Dialog.IO().debug("getInstance", "Exit flag is " + _transporter._exit);
+			Dialog.IO().debug("getInstance", "Creating TransporterPort");
 			_transporter._port = new TransporterPort();
+			Dialog.IO().debug("getInstance", "TransporterPort created");
+
+			Dialog.IO().debug("getInstance", "Creating Random");
 			_transporter._random = new Random();
+			Dialog.IO().debug("getInstance", "Random created");
+
+			Dialog.IO().debug("getInstance", "Initializing TimerTask ArrayList");
 			_transporter._timerTasks = new ArrayList<TimerTask>();
+			Dialog.IO().debug("getInstance", "TimerTask ArrayList initialized");
+			Dialog.IO().debug("getInstance", "Clearing jobs");
 			getInstance().clearJobs();
+			Dialog.IO().debug("getInstance", "Jobs cleared");
 		}
 		return _transporter;
 	}
 	
+	/**
+	 * Returns the exit flag
+	 * 
+	 * @return boolean true is application is closing
+	 */
 	public boolean exit(){ return _exit; }
 	
+	/**
+	 * This constructor should not be used
+	 * It will be called by getInstance on Singleton
+	 * 
+	 * That's why it's private
+	 * 
+	 * Do not make it public!!
+	 */
 	private TransporterManager(){}
 	
-	public TransporterManager(String uddiURL, String name, String url, int id) throws JAXRException{
-		this();
-		Dialog.IO().debug(this.getClass().getSimpleName(), "Creating instance");
+	/**
+	 * This constructor is used to create a new instance of the class
+	 * It should be replaced by a new static method called setConfig
+	 * @param uddiURL
+	 * @param name
+	 * @param url
+	 * @param id
+	 * @throws JAXRException
+	 */
+	public TransporterManager(String uddiURL, String name, String url, int id) throws JAXRException{		
+		Dialog.IO().debug("TransporterManager", "Creating instance");
+		
+		Dialog.IO().trace("TransporterManager", "Setting uddiURL: " + uddiURL);
 		getInstance()._uddiURL = uddiURL;
+		
+		Dialog.IO().trace("TransporterManager", "Setting WebService Name: " + name);
 		getInstance()._wsName = name;
+		
+		Dialog.IO().trace("TransporterManager", "Setting company Name: " + name);
 		getInstance()._companyName = name;
+		
+		Dialog.IO().debug("TransporterManager", "Creating new TransporterPort");
 		getInstance()._port = new TransporterPort();
+		Dialog.IO().debug("TransporterManager", "TransporterPort created");
+		
+		Dialog.IO().debug("TransporterManager", "Clearing jobs");
 		getInstance().clearJobs();
+		Dialog.IO().debug("TransporterManager", "Jobs cleared");
+		
+		Dialog.IO().trace("TransporterManager", "Setting id: " + id);
 		getInstance()._id = id;
+		Dialog.IO().trace("TransporterManager", "Setting WebService URL: " + url);
 		getInstance()._wsURL = url;
+
+		Dialog.IO().debug("TransporterManager", "Creating new EndpointManager with uddiURL: " + getInstance()._uddiURL);
 		getInstance()._endpoint = new EndpointManager(getInstance()._uddiURL);
-		Dialog.IO().debug(this.getClass().getSimpleName(), "Created instance");
+		Dialog.IO().debug("TransporterManager", "EndpointManager Created");
+		Dialog.IO().debug("TransporterManager", "Created instance");
 	}
+	
+	/**
+	 * This method publishes the WebService on the UDDI Server
+	 * @throws JAXRException
+	 */
 	public void publish() throws JAXRException{
+		Dialog.IO().debug("publish", "Publishing WebService");
+		
+		if(getInstance()._endpoint == null){
+			Dialog.IO().debug("publish", "EndpointManager is null. Creating a new EndpointManager with uddi " + getInstance()._uddiURL);
+			//This should not happen, but just in case...
+			getInstance()._endpoint = new EndpointManager(getInstance()._uddiURL);
+			Dialog.IO().debug("publish", "EndpointManager created");
+		}
+			
+		Dialog.IO().trace("publish", "WebService Name: " + getInstance()._wsName);
+		Dialog.IO().trace("publish", "WebService URL : " + getInstance()._wsURL);
 		getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL);
+		
+		Dialog.IO().debug("publish", "Setting author on handle: " + getInstance()._wsName);
 		AuthenticationHandler.setAuthor(getInstance()._wsName);
+		Dialog.IO().debug("publish", "WebService published");
 	}
 	
 	public void stop() throws JAXRException{

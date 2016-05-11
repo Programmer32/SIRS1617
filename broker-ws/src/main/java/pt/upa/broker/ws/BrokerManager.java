@@ -1,5 +1,6 @@
 package pt.upa.broker.ws;
 
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,6 +18,7 @@ import javax.jws.WebResult;
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.RequestWrapper;
 import javax.xml.ws.ResponseWrapper;
+import javax.xml.ws.WebServiceException;
 
 import example.ws.handler.AuthenticationHandler;
 import pt.upa.broker.ws.InvalidPriceFault;
@@ -49,6 +51,7 @@ public class BrokerManager {
 	}
 	
 	private static final int TIMEOUT = 500;
+	private static final int WAITING_TIME = new Double(TIMEOUT * 1.1).intValue();
 	
 	private Map<String, BrokerClient> _brokerSlaves;
 	
@@ -181,17 +184,23 @@ public class BrokerManager {
 		
 		//Needs to check ping frmo Broker Master
 		getInstance()._timerSlave = new Timer();
-		getInstance()._timerSlave.schedule(new BecomeMaster(),  new Double(BrokerManager.TIMEOUT * 20).intValue());
+		getInstance()._timerSlave.schedule(new BecomeMaster(),  BrokerManager.WAITING_TIME);
 	}
 	
 	public void stop() throws JAXRException{
 		if(!getInstance()._master){
 			Dialog.IO().debug("BrokerManager.stop", "It's going to be removed from BrokerMaster");
 			//getInstance()._brokerMaster.removeSlave(getInstance()._wsURL);
-			Dialog.IO().debug("BrokerManager.stop", "Removed from BrokerMaster");	
-			getInstance()._timerSlave.cancel();		
+			Dialog.IO().debug("BrokerManager.stop", "Removed from BrokerMaster");
+			if(getInstance()._timer != null)
+				getInstance()._timer.cancel();
+			if(getInstance()._timerSlave != null)
+				getInstance()._timerSlave.cancel();
 		}else{
-			getInstance()._timer.cancel();
+			if(getInstance()._timer != null)
+				getInstance()._timer.cancel();
+			if(getInstance()._timerSlave != null)
+				getInstance()._timerSlave.cancel();
 		}
 		Dialog.IO().debug("BrokerManager.stop", "Endpoint is going to unpublish");
 		getInstance()._endpoint.unpublish();
@@ -509,8 +518,8 @@ public class BrokerManager {
 		Dialog.IO().debug("pingSlave", "Master just pinged me. It's still alive");
 		getInstance()._timerSlave.cancel();
 		getInstance()._timerSlave = new Timer();
-		getInstance()._timerSlave.schedule(new BecomeMaster(),  new Double(BrokerManager.TIMEOUT * 2).intValue());
-		Dialog.IO().debug("pingSlave", "Waiting again during " + new Double(BrokerManager.TIMEOUT * 2).intValue() + " seconds");
+		getInstance()._timerSlave.schedule(new BecomeMaster(),  BrokerManager.WAITING_TIME);
+		Dialog.IO().debug("pingSlave", "Waiting again during " + BrokerManager.WAITING_TIME + " milisseconds");
 	}
 	
 	private class BecomeMaster extends TimerTask {
@@ -534,7 +543,13 @@ public class BrokerManager {
 			for(String s : getInstance()._brokerSlaves.keySet()){
 				Dialog.IO().debug("SendImAlive", s);
 				BrokerClient c = getInstance()._brokerSlaves.get(s);
-				if(c != null) c.pingSlave(0);
+				if(c != null){
+					try{
+						c.pingSlave(0);
+					}catch(WebServiceException e){
+						getInstance()._brokerSlaves.remove(s);
+					}
+				}
 			}
 			//TODO
 		}
