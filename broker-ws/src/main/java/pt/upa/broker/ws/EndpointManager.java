@@ -81,6 +81,13 @@ public class EndpointManager {
 		return new ArrayList<TransporterClient>(clients.values());
 	}
 	
+	/**
+	 * This method publishes the WebService on UDDI Sever
+	 * @param BrokerPort to associate with the WebService
+	 * @param WebService Name
+	 * @param Endpoint URL
+	 * @throws JAXRException
+	 */
 	protected void publish(BrokerPort t, String wsName, String url) throws JAXRException{
 		Dialog.IO().debug("publish", "Init publishing " + wsName + " available on " + url);
 		try{
@@ -93,12 +100,13 @@ public class EndpointManager {
 			_endpoint.publish(url);
 			Dialog.IO().debug("publish", "Started");
 			
-			// publish to UDDI
-			Dialog.IO().debug("publish", "Publishing '" + wsName + "' to UDDI at " + _uddiURL);
+			if(_uddiNaming == null){
+				// publish to UDDI
+				Dialog.IO().debug("publish", "Publishing '" + wsName + "' to UDDI at " + _uddiURL);
+				_uddiNaming = new UDDINaming(_uddiURL);
+			}
 			
-			_uddiNaming = new UDDINaming(_uddiURL);
-
-			Dialog.IO().debug("publish", "Binding");
+			Dialog.IO().debug("publish", "Binding with name: " + _name);
 			_uddiNaming.rebind(_name, url);
 			Dialog.IO().debug("publish", "End bind");
 		}catch(JAXRException e){
@@ -106,6 +114,7 @@ public class EndpointManager {
 			throw e;
 		}
 	}
+	
 	protected void unpublish(){
 		Dialog.IO().debug("EndPManager.unpublish", "Endpoint is going to unpublish");
 		try{
@@ -116,6 +125,7 @@ public class EndpointManager {
 		try {
 			if(_uddiNaming != null && _name != null) {
 				// delete from UDDI
+				Dialog.IO().debug("publish", "Unbinding with name: " + _name);
 				_uddiNaming.unbind(_name);
 				
 				Dialog.IO().println("Deleted '" + _name +"' from UDDI");

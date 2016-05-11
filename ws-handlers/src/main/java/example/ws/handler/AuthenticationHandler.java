@@ -27,7 +27,6 @@ import javax.crypto.Cipher;
 import javax.management.RuntimeErrorException;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
-import javax.xml.registry.JAXRException;
 import javax.xml.soap.Name;
 import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPElement;
@@ -42,16 +41,13 @@ import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
-//import pt.upa.ca.ws.*;
-
-import pt.upa.ca.ws.EntityNotFoundException;
 import pt.upa.ca.ws.EntityNotFoundException_Exception;
 import pt.upa.ca.ws.cli.CAClient;
 import pt.upa.ui.Dialog;
 import sun.misc.BASE64Encoder;
 import sun.misc.BASE64Decoder;
 
-
+@SuppressWarnings("restriction")
 public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	
 	private static long counter = 0;
@@ -76,29 +72,31 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	
 	public static final String NOUNCE_DELIMITER = "/(.)(.)\\";
 	public static final int DIFFERENCE_SECONDS  = 30;
-	
-	public static final String _uddiURL   = "http://localhost:9090";
+		
+	public static final String _uddiURL = "http://localhost:9090";
 	public static final String CA_WS_NAME = "CertificateAuthorityWS";
+	private static UDDINaming _uddiNaming;
+	private static CAClient _caWS;
+	
 	
 	public Set<QName> getHeaders() {
 		return null;
 	}
 	
-	public static void setAuthor(String name){
-		String _uddiURL   = "CertificateAuthorityWS" ;
-		String CA_WS_NAME = "http://localhost:9090";
-		UDDINaming _uddiNaming;
+	
+	public static void setAuthor(String name){	
 		String endpointAddr = "";
-		CAClient ca_ws = null;
+		
 		try {
 			_uddiNaming = new UDDINaming(_uddiURL);
 			endpointAddr = _uddiNaming.lookup(CA_WS_NAME);
-			ca_ws = new CAClient(endpointAddr);
+			_caWS = new CAClient(endpointAddr);
 		} catch (Exception e) {
 			e.printStackTrace();
-		}; 
-		ca_ws.addEntity(name);
-		Dialog.IO().debug("Register CA","Added new entity: " +name);
+		}
+		
+		_caWS.addEntity(name);
+		Dialog.IO().debug("Register CA","Added new entity: " + name);
 		AuthenticationHandler.MESSAGE_AUTHOR = name;
 	}
 
@@ -264,7 +262,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 		String key;
 		try{
 			key = ca_ws.getPublicKey(author);
-		} catch( EntityNotFoundException_Exception e) {
+		} catch(EntityNotFoundException_Exception e) {
 			throw new RuntimeException("Invalid Author");
 		}
 		
