@@ -25,11 +25,7 @@
 
 		<ws.i>1</ws.i>
         <ws.name>UpaTransporter${ws.i}</ws.name>
-
         <uddi.url>http://localhost:9090</uddi.url>
-
-
-
     </properties>
 
     <dependencies>

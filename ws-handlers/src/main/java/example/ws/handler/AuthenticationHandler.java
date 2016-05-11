@@ -20,6 +20,7 @@ import java.security.SignatureException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.security.spec.PKCS8EncodedKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.time.Instant;
@@ -63,6 +64,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	public static final String AUTHOR_PREFIX    = "e";
 
 	public static 		String MESSAGE_AUTHOR;
+	public static 		String TRANSPORTER_ID = "";
 	
 	public static final String CA_CERTIFICATE_FILE = "./src/main/resources/ca.pem";
 	public static final String CIPHER_MODE = "RSA/ECB/PKCS1Padding";
@@ -182,6 +184,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 			byte[] signedBody = makeDigitalSignature(sBody.getTextContent() + elementNounce.getTextContent(), keys.getPrivate());
 			// add value to header element 
 			elementDigest.setTextContent(printHexBinary(signedBody));
+			
 			
 			//Update Envelope
 			msg.saveChanges();

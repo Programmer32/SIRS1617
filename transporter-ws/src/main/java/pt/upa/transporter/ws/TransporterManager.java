@@ -155,11 +155,11 @@ public class TransporterManager {
 		}
 			
 		Dialog.IO().trace("publish", "WebService Name: " + getInstance()._wsName);
-		Dialog.IO().trace("publish", "WebService URL: " + getInstance()._wsURL);
+		Dialog.IO().trace("publish", "WebService URL : " + getInstance()._wsURL);
 		getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL);
 		
-		Dialog.IO().debug("publish", "Setting author on handle: " + getInstance()._wsURL);
-		AuthenticationHandler.setAuthor(getInstance()._wsURL);
+		Dialog.IO().debug("publish", "Setting author on handle: " + getInstance()._wsName);
+		AuthenticationHandler.setAuthor(getInstance()._wsName);
 		Dialog.IO().debug("publish", "WebService published");
 	}
 	

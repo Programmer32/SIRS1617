@@ -149,7 +149,7 @@ public class BrokerManager {
 		
 		//Sets Author on AuthenticationHandler for messages sent by this app
 		//This is needed to check authenticity of messages
-		AuthenticationHandler.setAuthor(getInstance()._wsName + "@" + getInstance()._wsURL);
+		AuthenticationHandler.setAuthor(getInstance()._wsName);
 
 		//Needs to disable check ping from Master
 		//TODO
