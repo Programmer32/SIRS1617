@@ -50,16 +50,41 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
      * output the message. The writeTo() method can throw
      * SOAPException or IOException
      */
-    private void logToSystemOut(SOAPMessageContext smc) {
+    public static void logToSystemOut(SOAPMessageContext smc) {
+    	Boolean outbound = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
+    	
+    	if (outbound) {
+    		Dialog.IO().yellow();
+    		Dialog.IO().debug("Outbound SOAP message:");
+    		Dialog.IO().white();
+    	} else {
+    		Dialog.IO().cyan();
+    		Dialog.IO().debug("Inbound SOAP message:");
+    		Dialog.IO().white();
+    	}
+    	
+    	SOAPMessage message = smc.getMessage();
+    	try {
+    		ByteArrayOutputStream out = new ByteArrayOutputStream();
+    		message.writeTo(out);
+    		String strMsg = new String(out.toByteArray());
+    		strMsg = prettyFormat(strMsg);
+    		Dialog.IO().SOAP(strMsg);
+    	} catch (Exception e) {
+    		System.out.printf("Exception in handler: %s%n\n", e);
+    	}
+    }
+
+    public static void logToSystemERR(SOAPMessageContext smc) {
         Boolean outbound = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
         if (outbound) {
         	Dialog.IO().yellow();
-        	Dialog.IO().debug("Outbound SOAP message:");
+        	Dialog.IO().println("Outbound SOAP message:");
         	Dialog.IO().white();
         } else {
         	Dialog.IO().cyan();
-        	Dialog.IO().debug("Inbound SOAP message:");
+        	Dialog.IO().println("Inbound SOAP message:");
         	Dialog.IO().white();
         }
 
@@ -69,14 +94,14 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
         	message.writeTo(out);
         	String strMsg = new String(out.toByteArray());
         	strMsg = prettyFormat(strMsg);
-        	Dialog.IO().SOAP(strMsg);
+        	Dialog.IO().print(strMsg);
         } catch (Exception e) {
             System.out.printf("Exception in handler: %s%n\n", e);
         }
     }
     
     
-    private String prettyFormat(String input, int indent) {
+    protected static String prettyFormat(String input, int indent) {
         try {
             Source xmlInput = new StreamSource(new StringReader(input));
             StringWriter stringWriter = new StringWriter();
@@ -92,7 +117,7 @@ public class LoggingHandler implements SOAPHandler<SOAPMessageContext> {
         }
     }
 
-    private String prettyFormat(String input) {
+    protected static String prettyFormat(String input) {
         return prettyFormat(input, 2);
     }
     

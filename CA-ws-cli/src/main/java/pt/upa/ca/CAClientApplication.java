@@ -12,6 +12,7 @@ import pt.upa.ca.ws.cli.CAClient;
 public class CAClientApplication {
 
 	public static void main(String[] args) throws Exception {
+
 		// Check arguments
 		if (args.length < 2) {
 			System.err.println("Argument(s) missing!");
@@ -19,6 +20,7 @@ public class CAClientApplication {
 			return;
 		}
 
+		
 		CAImplService service = new CAImplService();
 		CA port = service.getCAImplPort();
 
@@ -46,25 +48,42 @@ public class CAClientApplication {
 		requestContext.put(ENDPOINT_ADDRESS_PROPERTY, endpointAddress);
 
 		CAClient client = new CAClient(port);
+		
+		int transporters = Integer.parseInt(args[2]);
+		if ( transporters > 0) {
+			produceKeys(client, transporters);
+		} else {
+			String command = new String("");
+			Scanner input = new Scanner(System.in);
+			System.out.println("Done");
+			do {
+				command = input.next();
+				switch (command) {
+				case "add":
+					client.addEntity(input.next());
+					break;
+				case "get":
+					System.out.println("get RESULT: " + client.getPublicKey(input.next()));
+					break;
+				default:
+					System.out.println("possible commands:\n ºget\n ºadd\n");
+					break;
+				}
+			} while (!command.equals("exit"));
+			input.close();
+		}
 
-		String command = new String("");
-		Scanner input = new Scanner(System.in);
-		System.out.println("Done");
-		do{
-			command = input.next();
-			switch(command){
-			case "add":
-				client.addEntity(input.next());
-				break;
-			case "get":
-				System.out.println("get RESULT: " +client.getPublicKey(input.next()));
-				break;
-			default:
-				System.out.println("possible commands:\n ºget\n ºadd\n");
-				break;
-			}
-		}while(!command.equals("exit"));
-		input.close();
+	}
+
+	private static void produceKeys(CAClient client, int numTransporters) {
+		String name = "UpaBroker";
+		client.addEntity(name);
+		name = "UpaTransporter";
+		for (int i = 1; i <= numTransporters; i++) {
+			client.addEntity(name + i);
+		}
+		name = "TransporterClient";
+		client.addEntity(name);
 
 	}
 }

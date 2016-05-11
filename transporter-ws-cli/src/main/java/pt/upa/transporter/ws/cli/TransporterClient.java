@@ -5,6 +5,8 @@ import java.util.Map;
 import pt.upa.ui.Dialog;
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.BindingProvider;
+
+import example.ws.handler.AuthenticationHandler;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.transporter.ws.BadJobFault_Exception;
 import pt.upa.transporter.ws.BadLocationFault_Exception;
@@ -47,9 +49,9 @@ public class TransporterClient {
 		_bindingProvider = (BindingProvider) _port;
 		Map<String, Object> requestContext = _bindingProvider
 				.getRequestContext();
-		requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
-				_endpoint);
-
+		requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,_endpoint);
+		
+		AuthenticationHandler.setAuthorIfNull("TransporterClient");
 		Dialog.IO().debug("TransporterClient", "TransporterClient created");
 	}
 	
@@ -66,12 +68,14 @@ public class TransporterClient {
 		Dialog.IO().debug("TransporterClient", "Creating TransporterClient");
 		Dialog.IO().debug("TransporterClient", "Setting uddiURL: " + uddiURL);
 		_uddiURL = uddiURL;
+		AuthenticationHandler.setUDDI_URL(_uddiURL);
 		Dialog.IO().debug("TransporterClient", "Setting WebService Name: " + wsName);
 		_wsName = wsName;
 
 		Dialog.IO().debug("TransporterClient", "Establish Connection");
 		establishConnection();
-		
+
+		AuthenticationHandler.setAuthorIfNull("TransporterClient");
 		Dialog.IO().debug("TransporterClient", "TransporterClient created");
 	}
 	
@@ -112,6 +116,7 @@ public class TransporterClient {
 				.getRequestContext();
 		requestContext.put(BindingProvider.ENDPOINT_ADDRESS_PROPERTY,
 				_endpoint);
+		
 	}
 	
 	/**

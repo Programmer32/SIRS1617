@@ -131,6 +131,7 @@ public class BrokerManager {
 			becomeMaster();
 			Dialog.IO().debug(this.getClass().getSimpleName(), "Master Created");
 		}
+		
 		Dialog.IO().debug(this.getClass().getSimpleName(), "Created instance");
 	}
 	

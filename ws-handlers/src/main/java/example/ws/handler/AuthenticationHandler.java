@@ -58,17 +58,17 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	
 	public static final String DIGEST_HEADER    = "digested_message";
 	public static final String DIGEST_NAMESPACE = "http://ws.transporter.upa.pt/";
-	public static final String DIGEST_PREFIX    = "e";
+	public static final String DIGEST_PREFIX    = "paa";
 	
 	public static final String NOUNCE_HEADER    = "nounce_header";
 	public static final String NOUNCE_NAMESPACE = DIGEST_NAMESPACE;
-	public static final String NOUNCE_PREFIX    = "e";
+	public static final String NOUNCE_PREFIX    = "paa";
 	
 	public static final String AUTHOR_HEADER    = "author_header";
 	public static final String AUTHOR_NAMESPACE = DIGEST_NAMESPACE;
-	public static final String AUTHOR_PREFIX    = "e";
+	public static final String AUTHOR_PREFIX    = "paa";
 
-	public static 		String MESSAGE_AUTHOR;
+	public static 		String MESSAGE_AUTHOR;//   = "TransporterClient";
 	
 	public static final String CA_CERTIFICATE_FILE = "./src/main/resources/ca.pem";
 	public static final String CIPHER_MODE = "RSA/ECB/PKCS1Padding";
@@ -77,31 +77,57 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	public static final String NOUNCE_DELIMITER = "/(.)(.)\\";
 	public static final int DIFFERENCE_SECONDS  = 30;
 	
-	public static final String _uddiURL   = "http://localhost:9090";
-	public static final String CA_WS_NAME = "CertificateAuthorityWS";
+	public static String UDDI_URL   = "http://localhost:9090";
+	public static String CA_WS_NAME = "CertificateAuthorityWS";
 	
 	public Set<QName> getHeaders() {
 		return null;
 	}
 	
 	public static void setAuthor(String name){
-		String _uddiURL   = "CertificateAuthorityWS" ;
-		String CA_WS_NAME = "http://localhost:9090";
+		/*
+		String CA_WS_NAME    = "CertificateAuthorityWS" ;
+		String _uddiURL		 = "http://localhost:9090";
 		UDDINaming _uddiNaming;
 		String endpointAddr = "";
 		CAClient ca_ws = null;
 		try {
 			_uddiNaming = new UDDINaming(_uddiURL);
+			System.out.println("_uddiNaming: " + _uddiNaming);
 			endpointAddr = _uddiNaming.lookup(CA_WS_NAME);
+			System.out.println("endpointAddr: " + endpointAddr);
 			ca_ws = new CAClient(endpointAddr);
+			System.out.println("ca_ws: " + ca_ws);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}; 
 		ca_ws.addEntity(name);
-		Dialog.IO().debug("Register CA","Added new entity: " +name);
+		Dialog.IO().debug("Register CA","Added new entity: " +name);*/
 		AuthenticationHandler.MESSAGE_AUTHOR = name;
 	}
+	
+	
+	/**
+	 * Method good for Transport Client being Used only for testing
+	 * @param name
+	 */
+	public static void setAuthorIfNull(String name){
 
+		String autor = AuthenticationHandler.MESSAGE_AUTHOR;
+		if(autor != null){
+			return;
+		}
+		setAuthor(name);
+
+	}
+
+	public static void setUDDI_URL(String url){
+		UDDI_URL = url;
+	}
+	public static void setCA_WS_NAME(String name){
+		CA_WS_NAME = name;
+	}
+	
 	public boolean handleMessage(SOAPMessageContext smc) {
 		Boolean outbound = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
@@ -131,7 +157,8 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	}
 
 	public boolean handleFault(SOAPMessageContext smc) {
-		System.out.println("\u001B[31mHandle Fault: TODO\u001B[0m");
+		System.out.println("\u001B[31mFault Message Received\u001B[0m");
+		LoggingHandler.logToSystemERR(smc);
 		//        logToSystemOut(smc);
 		return true;
 	}
@@ -256,9 +283,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 //		KeyPair keys = read("./src/main/resources/pub.key","./src/main/resources/priv.key");
 //		PublicKey pKey = keys.getPublic();
 
-		String _uddiURL   = "http://localhost:9090" ;
-		String CA_WS_NAME = "CertificateAuthorityWS";
-		UDDINaming _uddiNaming = new UDDINaming(_uddiURL);; 
+		UDDINaming _uddiNaming = new UDDINaming(UDDI_URL); 
 		String endpointAddr = _uddiNaming.lookup(CA_WS_NAME);
 		CAClient ca_ws = new CAClient(endpointAddr);
 		String key;
@@ -426,5 +451,6 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 		fis.close();
 		return content;
 	}
+	
 	
 }

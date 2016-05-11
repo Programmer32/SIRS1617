@@ -6,6 +6,7 @@ import javax.xml.ws.BindingProvider;
 
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.ca.ws.*;
+import pt.upa.ui.Dialog;
 
 public class CAClient {
 	
@@ -22,9 +23,9 @@ public class CAClient {
 		
 	}
 	public CAClient(String endpointAddress) throws Exception{
-		System.out.println("CAClient: " + "Creating a CAClient " + endpointAddress);
+		Dialog.IO().debug("CAClient: " , "Creating a CAClient " + endpointAddress);
 		if (endpointAddress == null){
-			System.out.println("CAClient " + "Null endpoint received");
+			Dialog.IO().error("CAClient " + "Null endpoint received");
 			return; //Should throw exception
 		}
 		try{
@@ -50,9 +51,9 @@ public class CAClient {
 		UDDINaming uddiNaming;
 		String endpointAddress;
 		try{
-			System.out.println("establishConnection" + "Connecting to uddi: " + _uddiURL);
+			Dialog.IO().debug("establishConnection" , "Connecting to uddi: " + _uddiURL);
 			uddiNaming = new UDDINaming(_uddiURL);
-			System.out.println("establishConnection" + "Searching WebService: " + _wsName);
+			Dialog.IO().debug("establishConnection" , "Searching WebService: " + _wsName);
 			endpointAddress = uddiNaming.lookup(_wsName);
 			
 		}catch(Exception e){
@@ -60,10 +61,10 @@ public class CAClient {
 		}
 		
 		if (endpointAddress == null){
-			System.out.println("establishConnection: " + "Not found!");
+			Dialog.IO().debug("establishConnection: " , "Not found!");
 			throw new Exception("Service with name BrokerWebService not found on UDDI at "+ _uddiURL);
 		}else{
-			System.out.printf("Found %s%n", endpointAddress);
+			Dialog.IO().debug("establishConnection: " ,"Found %s%n" + endpointAddress);
 		}
 		try{
 			_client = new CAImplService();
@@ -80,13 +81,13 @@ public class CAClient {
 	}
 
 	public void addEntity(String name) {
-		System.out.println("tyring  to add Entity: " + name);
 		_port.addEntity(name);
-		System.out.println("success to add Entity: " + name);
+		Dialog.IO().debug("addEntity", "Entity added: " + name);
+
 	}
 
 	public String getPublicKey(String name) throws EntityNotFoundException_Exception {
-		System.out.println("requesting PublicKey name: " + name);
+		Dialog.IO().debug("requesting PubKey","pub of entitiy: " + name);
 		return _port.getPublicKey(name);
 	}	
 }

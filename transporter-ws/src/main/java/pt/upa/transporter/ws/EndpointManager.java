@@ -3,6 +3,7 @@ package pt.upa.transporter.ws;
 import javax.xml.registry.JAXRException;
 import javax.xml.ws.Endpoint;
 
+import example.ws.handler.AuthenticationHandler;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.ui.Dialog;
 
@@ -16,6 +17,7 @@ public class EndpointManager {
 	protected EndpointManager(String uddiURL) throws JAXRException{
 		Dialog.IO().debug("EndpoingManager", "Creating Endpoint Manager");
 		_uddiURL = uddiURL;
+		AuthenticationHandler.setUDDI_URL(_uddiURL);
 		Dialog.IO().debug("EndpoingManager", "Endpoint Manager created");
 	}
 	

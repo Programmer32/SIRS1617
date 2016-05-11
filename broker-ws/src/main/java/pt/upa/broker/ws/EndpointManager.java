@@ -12,6 +12,7 @@ import javax.xml.ws.Endpoint;
 
 import com.sun.xml.ws.client.ClientTransportException;
 
+import example.ws.handler.AuthenticationHandler;
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
 import pt.upa.broker.ws.cli.BrokerClient;
 import pt.upa.broker.ws.cli.BrokerClientException;
@@ -28,6 +29,7 @@ public class EndpointManager {
 	public EndpointManager(String uddiURL) throws JAXRException{
 		Dialog.IO().debug("EndpoingManager", "Creating Endpoint Manager");
 		_uddiURL = uddiURL;
+		AuthenticationHandler.setUDDI_URL(_uddiURL);
 		Dialog.IO().debug("EndpoingManager", "Endpoint Manager created");
 	}
 	

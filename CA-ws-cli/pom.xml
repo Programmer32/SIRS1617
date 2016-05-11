@@ -56,6 +56,7 @@
 
 		<uddi.url>http://localhost:9090</uddi.url>
 		<ws.name>CertificateAuthorityWS</ws.name>
+		<ws.trans>0</ws.trans>
 
 
 		<ws.host>localhost</ws.host>
@@ -110,6 +111,7 @@
 					<arguments>
 						<argument>${uddi.url}</argument>
 						<argument>${ws.name}</argument>
+						<argument>${ws.trans}</argument>					
 					</arguments>
 				</configuration>
 			</plugin>
