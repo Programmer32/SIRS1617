@@ -47,8 +47,9 @@ public class TransporterManager {
 			Dialog.IO().debug("getInstance", "TransporterManager created");
 			_transporter._exit = false;
 			Dialog.IO().debug("getInstance", "Exit flag is " + _transporter._exit);
-			Dialog.IO().debug("getInstance", "Creating TransporterPort");
-			_transporter._port = new TransporterPort();
+
+			Dialog.IO().debug("getInstance", "Creating new TransporterPort");
+			getInstance()._port = new TransporterPort();
 			Dialog.IO().debug("getInstance", "TransporterPort created");
 
 			Dialog.IO().debug("getInstance", "Creating Random");
@@ -85,27 +86,32 @@ public class TransporterManager {
 	/**
 	 * This constructor is used to create a new instance of the class
 	 * It should be replaced by a new static method called setConfig
+	 * 
 	 * @param uddiURL
 	 * @param name
 	 * @param url
 	 * @param id
+	 * @throws TransporterManagerException
 	 * @throws JAXRException
 	 */
-	public TransporterManager(String uddiURL, String name, String url, int id) throws JAXRException{		
+	public static void config(String uddiURL, String name, String url, int id) throws TransporterManagerException, JAXRException {
 		Dialog.IO().debug("TransporterManager", "Creating instance");
 		
 		Dialog.IO().trace("TransporterManager", "Setting uddiURL: " + uddiURL);
+		if(getInstance()._uddiURL != null) throw new TransporterManagerException("UDDI URL is already defined");
 		getInstance()._uddiURL = uddiURL;
 		
 		Dialog.IO().trace("TransporterManager", "Setting WebService Name: " + name);
+		if(getInstance()._wsName != null) throw new TransporterManagerException("WebService Name is already defined");
 		getInstance()._wsName = name;
+
+		Dialog.IO().trace("TransporterManager", "Setting WebService URL: " + url);
+		if(getInstance()._wsURL != null) throw new TransporterManagerException("WebService URL is already defined");
+		getInstance()._wsURL = url;
 		
 		Dialog.IO().trace("TransporterManager", "Setting company Name: " + name);
+		if(getInstance()._companyName != null) throw new TransporterManagerException("Company Name is already defined");
 		getInstance()._companyName = name;
-		
-		Dialog.IO().debug("TransporterManager", "Creating new TransporterPort");
-		getInstance()._port = new TransporterPort();
-		Dialog.IO().debug("TransporterManager", "TransporterPort created");
 		
 		Dialog.IO().debug("TransporterManager", "Clearing jobs");
 		getInstance().clearJobs();
@@ -113,20 +119,32 @@ public class TransporterManager {
 		
 		Dialog.IO().trace("TransporterManager", "Setting id: " + id);
 		getInstance()._id = id;
-		Dialog.IO().trace("TransporterManager", "Setting WebService URL: " + url);
-		getInstance()._wsURL = url;
-
+		
 		Dialog.IO().debug("TransporterManager", "Creating new EndpointManager with uddiURL: " + getInstance()._uddiURL);
+		if(getInstance()._endpoint != null) throw new TransporterManagerException("EndpointManager is already defined");
 		getInstance()._endpoint = new EndpointManager(getInstance()._uddiURL);
 		Dialog.IO().debug("TransporterManager", "EndpointManager Created");
+		
 		Dialog.IO().debug("TransporterManager", "Created instance");
 	}
+	
+	/**
+	 * 
+	 * @param id
+	 */
+	public static void id(int id){ getInstance()._id = id; }
+	
+	/**
+	 * 
+	 * @param name
+	 */
+	public static void companyName(String name){ getInstance()._companyName = name; }
 	
 	/**
 	 * This method publishes the WebService on the UDDI Server
 	 * @throws JAXRException
 	 */
-	public void publish() throws JAXRException{
+	public static void publish() throws JAXRException{
 		Dialog.IO().debug("publish", "Publishing WebService");
 		
 		if(getInstance()._endpoint == null){
@@ -145,48 +163,81 @@ public class TransporterManager {
 		Dialog.IO().debug("publish", "WebService published");
 	}
 	
-	public void stop() throws JAXRException{
+	/**
+	 * This method unpublishes the WebService of the UDDI Server
+	 * Cancels the Timers running
+	 * 
+	 * @throws JAXRException
+	 */
+	public static void stop() throws JAXRException{
 		Dialog.IO().debug("BrokerManager.stop", "Endpoint is going to unpublish");
-		_exit = true;
-		for(TimerTask t : _timerTasks){
+		getInstance()._exit = true;
+		for(TimerTask t : getInstance()._timerTasks){
 			if(t != null){
 				Dialog.IO().debug("stop", "Stopping timerTask: " + t.cancel());
 				Dialog.IO().debug("stop", "TimerTask stopped");
 			}
 		}
-		_endpoint.unpublish();
+		getInstance()._endpoint.unpublish();
 
 		Dialog.IO().debug("BrokerManager.stop", "Endpoint has unpublished WebService");
 	}
 
+	/**
+	 * Delete timer from arraylist
+	 * 
+	 * @param t
+	 */
 	protected void removeTimer(TimerTask t){ _timerTasks.remove(t); }
+	
+	/**
+	 * Adds a TimerTask to the arrayList
+	 * 
+	 * @param t
+	 */
 	protected void addTimer(TimerTask t){ _timerTasks.add(t); }
 	
-	private String newJobIdentifier(String origin, String destination){
-		return _companyName + new Integer(_numberOfJobs++).toString();
+	/**
+	 * This method should generate a new unique JobIdentifier
+	 * 
+	 * @return
+	 */
+	private static String newJobIdentifier(){
+		return getInstance()._companyName + new Integer(getInstance()._numberOfJobs++).toString();
 	}
 	
-	public void id(int id){ _id = id; }
-	
-	public void companyName(String companyName){ _companyName = companyName; }
-	
-	public String ping(String name){
-		return new String(_companyName  + " is online!\t");
+	/** 
+	 * This method is called by TransporterPort
+	 * 
+	 * @param name
+	 * @return
+	 */
+	protected String ping(String name){
+		return new String(_companyName  + " is online!");
 	}
 	
+	/**
+	 * This method returns a proposal price for the job asked
+	 * 
+	 * @param origin
+	 * @param destination
+	 * @param price
+	 * @return JobView
+	 * @throws BadLocationFault_Exception if origin or destination is unknown
+	 * @throws BadPriceFault_Exception if the price is lower than zero
+	 */
 	public JobView requestJob(String origin, String destination, int price) throws BadLocationFault_Exception, BadPriceFault_Exception{
 		{
-			String methodName = new Object(){}.getClass().getEnclosingMethod().getName();
 			
-			Dialog.IO().debug(methodName,"Job requested");
+			Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(),"Job requested");
 			
 			if(origin == null){
-				Dialog.IO().debug(methodName, "Origin string cannot be null");
+				Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Origin string cannot be null");
 				throw new BadLocationFault_Exception("Origin string is null", new BadLocationFault());
 			}
 			
 			if(destination == null){
-				Dialog.IO().debug(methodName, "Destination string cannot be null");
+				Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Destination string cannot be null");
 				throw new BadLocationFault_Exception("Destination string is null", new BadLocationFault());
 			}
 			
@@ -207,11 +258,11 @@ public class TransporterManager {
 				if(s.equals(destination)) destinationNotFound = false;
 			}
 			if(originNotFound){
-				Dialog.IO().debug(methodName, "Origin location not found on database: " + origin);
+				Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Origin location not found on database: " + origin);
 				throw new BadLocationFault_Exception("Origin unknown", new BadLocationFault());
 			}
 			if(destinationNotFound){
-				Dialog.IO().debug(methodName, "Destination location not found on database: " + destination);
+				Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Destination location not found on database: " + destination);
 				throw new BadLocationFault_Exception("Destination unknown", new BadLocationFault());
 			}
 
@@ -239,34 +290,87 @@ public class TransporterManager {
 				}
 			}
 			if(originNotFound){
-				Dialog.IO().debug(methodName, "Transporter does not provide service for this origin: " + origin);
+				Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Transporter does not provide service for this origin: " + origin);
 				throw new BadLocationFault_Exception("Transporter does not provide service for this origin: " + origin, new BadLocationFault());
 			}
 			if(destinationNotFound){
-				Dialog.IO().debug(methodName, "Transporter does not provide service for this destination: " + destination);
+				Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Transporter does not provide service for this destination: " + destination);
 				throw new BadLocationFault_Exception("Transporter does not provide service for this destination: " + destination, new BadLocationFault());
 			}
 			if(price < 0) return null;
 			if(price > 100){
-				Dialog.IO().debug(methodName, "Price is too high: " + price);
+				Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Price is too high: " + price);
 				return null;
 			}
+			Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Job is valid.");
+			
+			Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Creating a new JobView");
 			JobView j = new JobView();
+			Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Add JobView to List");
 			_jobs.getReturn().add(j);
+			Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Setting origin: " + origin);
 			j.setJobOrigin(origin);
+			Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Setting destination: " + destination);
 			j.setJobDestination(destination);
+
+			Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Setting Company Name: " + getInstance()._companyName);
 			j.setCompanyName(_companyName);
-			j.setJobState(JobStateView.PROPOSED);
-			j.setJobIdentifier(newJobIdentifier(origin, destination));
-			if(price < 2) j.setJobPrice(0);
-			else if(price <= 10) j.setJobPrice(price - (_random.nextInt(price - 1) + 1));
+
+			JobStateView jobStateView = JobStateView.PROPOSED;
+			Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Setting State: " + jobStateView);
+			j.setJobState(jobStateView);
+			
+			String id = newJobIdentifier();
+			Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Setting JobIdentifier: " + id);
+			j.setJobIdentifier(id);
+			
+
+			Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Computing price");
+			if(price < 2){
+				Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Price is lower than two and higher or equal to zero. Price will be zero.");
+				j.setJobPrice(0);
+			}
+			else if(price <= 10){
+				Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Price <= 10, so Price = Price - random(price-1) + 1.");
+				int random = (_random.nextInt(price - 1) + 1);
+				int finalPrice = (price - random);
+				Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Random: " + random + " Final price: " + finalPrice);
+				j.setJobPrice(finalPrice);
+			}
 			else{
+				Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Price > 10");
 				if(price % 2 == 0){
-					if(_id % 2 == 0) j.setJobPrice(price - (_random.nextInt(price - 1) + 1));
-					else j.setJobPrice(price + (_random.nextInt(price - 1) + 1));
+					Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Price is even");
+					if(_id % 2 == 0){
+						Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "CompanyIdentifier is even");
+						int random = (_random.nextInt(price - 1) + 1);
+						int finalPrice = (price - random);
+						Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Random: " + random + " Final price: " + finalPrice);
+						j.setJobPrice(finalPrice);
+					}
+					else{
+						Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "CompanyIdentifier is odd");
+						int random = (_random.nextInt(price - 1) + 1);
+						int finalPrice = (price + random);
+						Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Random: " + random + " Final price: " + finalPrice);
+						j.setJobPrice(finalPrice);
+					}
 				}else{
-					if(_id % 2 == 0) j.setJobPrice(price + (_random.nextInt(price - 1) + 1));
-					else j.setJobPrice(price - (_random.nextInt(price - 1) + 1));
+					Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Price is odd");
+					if(_id % 2 == 0){
+						Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "CompanyIdentifier is even");
+						int random = (_random.nextInt(price - 1) + 1);
+						int finalPrice = (price + random);
+						Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Random: " + random + " Final price: " + finalPrice);
+						j.setJobPrice(finalPrice);
+					}
+					else{
+						Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "CompanyIdentifier is odd");
+						int random = (_random.nextInt(price - 1) + 1);
+						int finalPrice = (price - random);
+						Dialog.IO().debug(new Object(){}.getClass().getEnclosingMethod().getName(), "Random: " + random + " Final price: " + finalPrice);
+						j.setJobPrice(finalPrice);
+					}
 				}
 			}
 			

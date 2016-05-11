@@ -20,8 +20,9 @@ public class Dialog {
 	public static final String ANSI_PURPLE = "\u001B[35m";
 	public static final String ANSI_CYAN = "\u001B[36m";
 	public static final String ANSI_WHITE = "\u001B[37m";
-	
+
 	private static boolean _debug;
+	private static boolean _soap;
 	private static boolean _trace;
 	private static Scanner _input;
 	private static Dialog _instance;
@@ -31,10 +32,13 @@ public class Dialog {
 		if(Dialog._instance == null){
 			String debug = System.getenv("UPA_DEBUG");
 			String trace = System.getenv("UPA_TRACE");
+			String soap = System.getenv("UPA_SOAP");
 			Dialog._debug = false;
 			Dialog._trace = false;
+			Dialog._soap = false;
 			if(debug != null && debug.equals("true")) Dialog._debug = true;
 			if(trace != null && trace.equals("true")) Dialog._trace = true;
+			if(soap != null && soap.equals("true")) Dialog._soap = true;
 			Dialog._instance = new Dialog();
 			Dialog._input = new Scanner(System.in);
 		}
@@ -61,6 +65,10 @@ public class Dialog {
 		for(i = 0; i < length - s.length() - 1; i+=2) print(" ");
 		if(i*2 != length - s.length()) print(" ");
 		print(" ] ");
+	}
+	public void SOAP(String s){
+		if(!Dialog._soap) return;
+		println(s);
 	}
 	public void debug(String method, String message){
 		if(!Dialog._debug) return; 

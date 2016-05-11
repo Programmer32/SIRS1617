@@ -1,6 +1,9 @@
 package pt.upa.transporter;
+import java.util.Scanner;
+
 import pt.upa.transporter.ws.JobView;
 import pt.upa.transporter.ws.cli.TransporterClient;
+import pt.upa.ui.Dialog;
 
 public class TransporterClientApplication {
 
@@ -12,18 +15,31 @@ public class TransporterClientApplication {
 		System.out.println("WS NAME:  " + _wsName);
 
 		try {
-			TransporterClient client = new TransporterClient(_uddiURL, _wsName);
-			System.out.println("PING: " + client.ping());
-
-			JobView j = client.requestJob("Lisboa", "Lisboa", 53);
-			if(j == null) System.out.println("No job returned");
-			else System.out.println("Price" + j.getJobPrice());
-			for(JobView job : client.listJobs()){
-				System.out.println("Transporter: " + job.getCompanyName() + " " + job.getJobOrigin() + " " + job.getJobDestination() + " " + job.getJobPrice() + " ");
-			}
-			if(client.listJobs().size() == 0)
-				System.out.println("There are no jobs.");
+			String command = new String();
+			Scanner input = new Scanner(System.in);
 			
+			TransporterClient client = new TransporterClient(_uddiURL, _wsName);
+			
+			do{
+				command = input.next();
+				switch(command){
+				case "ping":
+					Dialog.IO().println(client.ping(""));
+					break;
+				case "list":
+					for(JobView job : client.listJobs()){
+						Dialog.IO().println("Transporter: " + job.getCompanyName() + " " + job.getJobOrigin() + " " + job.getJobDestination() + " " + job.getJobPrice() + " ");
+					}
+					if(client.listJobs().size() == 0){
+						Dialog.IO().println("There are no jobs.");
+					}
+					break;
+				case "request":
+					JobView j = client.requestJob(input.next(), input.next(), input.nextInt());
+					if(j == null) Dialog.IO().println("No job returned");
+					else Dialog.IO().println("ID: " + j.getJobIdentifier() + " | Price: " + j.getJobPrice());
+				}
+			}while(!command.equals("exit"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

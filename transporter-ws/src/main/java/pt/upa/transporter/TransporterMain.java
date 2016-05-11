@@ -16,12 +16,12 @@ public class TransporterMain {
 		}
 		
 		try{
-			new TransporterManager(args[0], args[1], args[2], Integer.parseInt(args[3]));
-			TransporterManager.getInstance().publish();
+			TransporterManager.config(args[0], args[1], args[2], Integer.parseInt(args[3]));
+			TransporterManager.publish();
 			Dialog.IO().println("Waiting for connections");
 			Dialog.IO().println("Press enter to shutdown");
 			Dialog.IO().readLine();
-			TransporterManager.getInstance().stop();
+			TransporterManager.stop();
 		}catch(JAXRException e){
 			Dialog.IO().error("Web Service couldn't start.");
 			Dialog.IO().error("Reason: " + e);
