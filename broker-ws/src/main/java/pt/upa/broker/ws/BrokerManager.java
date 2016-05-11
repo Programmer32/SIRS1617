@@ -1,7 +1,5 @@
 package pt.upa.broker.ws;
 
-import java.net.ConnectException;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -12,12 +10,7 @@ import java.util.Random;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.jws.WebMethod;
-import javax.jws.WebParam;
-import javax.jws.WebResult;
 import javax.xml.registry.JAXRException;
-import javax.xml.ws.RequestWrapper;
-import javax.xml.ws.ResponseWrapper;
 import javax.xml.ws.WebServiceException;
 
 import example.ws.handler.AuthenticationHandler;
@@ -188,6 +181,12 @@ public class BrokerManager {
 		getInstance()._timerSlave.schedule(new BecomeMaster(),  BrokerManager.WAITING_TIME);
 	}
 	
+	/**
+	 * This method unpublishes the WebService of the UDDI Server
+	 * Cancels the Timers running
+	 * 
+	 * @throws JAXRException
+	 */
 	public void stop() throws JAXRException{
 		if(!getInstance()._master){
 			Dialog.IO().debug("BrokerManager.stop", "It's going to be removed from BrokerMaster");
@@ -207,6 +206,7 @@ public class BrokerManager {
 		getInstance()._endpoint.unpublish();
 		Dialog.IO().debug("BrokerManager.stop", "Endpoint has unpublished WebService");
 	}
+	
 	private TransporterClient transporter(String companyName) throws JAXRException{
 		Dialog.IO().debug("transporter","Getting transporter from uddi");
 		return getInstance()._endpoint.transporter(companyName);

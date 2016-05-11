@@ -27,7 +27,6 @@ import javax.crypto.Cipher;
 import javax.management.RuntimeErrorException;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
-import javax.xml.registry.JAXRException;
 import javax.xml.soap.Name;
 import javax.xml.soap.SOAPBody;
 import javax.xml.soap.SOAPElement;
@@ -42,16 +41,13 @@ import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
 import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
-//import pt.upa.ca.ws.*;
-
-import pt.upa.ca.ws.EntityNotFoundException;
 import pt.upa.ca.ws.EntityNotFoundException_Exception;
 import pt.upa.ca.ws.cli.CAClient;
 import pt.upa.ui.Dialog;
 import sun.misc.BASE64Encoder;
 import sun.misc.BASE64Decoder;
 
-
+@SuppressWarnings("restriction")
 public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	
 	private static long counter = 0;
@@ -90,11 +86,12 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 		String _uddiURL		 = "http://localhost:9090";
 		UDDINaming _uddiNaming;
 		String endpointAddr = "";
-		CAClient ca_ws = null;
+		
 		try {
 			_uddiNaming = new UDDINaming(_uddiURL);
 			System.out.println("_uddiNaming: " + _uddiNaming);
 			endpointAddr = _uddiNaming.lookup(CA_WS_NAME);
+
 			System.out.println("endpointAddr: " + endpointAddr);
 			ca_ws = new CAClient(endpointAddr);
 			System.out.println("ca_ws: " + ca_ws);
@@ -289,7 +286,7 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 		String key;
 		try{
 			key = ca_ws.getPublicKey(author);
-		} catch( EntityNotFoundException_Exception e) {
+		} catch(EntityNotFoundException_Exception e) {
 			throw new RuntimeException("Invalid Author");
 		}
 		
