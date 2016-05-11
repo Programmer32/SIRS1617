@@ -64,10 +64,8 @@ public class TransporterManager {
 		Dialog.IO().debug(this.getClass().getSimpleName(), "Created instance");
 	}
 	public void publish() throws JAXRException{
-	
 		getInstance()._endpoint.publish(getInstance()._port, getInstance()._wsName, getInstance()._wsURL);
-		String name = getInstance()._wsURL;
-		AuthenticationHandler.setAuthor(name);
+		AuthenticationHandler.setAuthor(getInstance()._wsName);
 	}
 	
 	public void stop() throws JAXRException{
