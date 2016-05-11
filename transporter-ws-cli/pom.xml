@@ -20,7 +20,8 @@
 
         <wsdl.directory>${basedir}/../transporter-ws/src/main/resources</wsdl.directory>
         <wsdl.filename>transporter.1_0.wsdl</wsdl.filename>
-
+        
+		<ca.ws>CertificateAuthorityWS</ca.ws>
         <mainclass>pt.upa.transporter.TransporterClientApplication</mainclass>
 
 		<ws.i>1</ws.i>

@@ -26,7 +26,7 @@
         <wsdl.filename>transporter.1_0.wsdl</wsdl.filename>
 
         <mainclass>pt.upa.transporter.TransporterMain</mainclass>
-
+		<ca.ws>CertificateAuthorityWS</ca.ws>
         <!-- instance number - redefine using -D option - e.g. mvn -Dws.i=2 exec:java -->
         <ws.i>1</ws.i>
 

@@ -77,13 +77,16 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 	public static final String NOUNCE_DELIMITER = "/(.)(.)\\";
 	public static final int DIFFERENCE_SECONDS  = 30;
 	
+	public static final String _uddiURL   = "http://localhost:9090";
+	public static final String CA_WS_NAME = "CertificateAuthorityWS";
+	
 	public Set<QName> getHeaders() {
 		return null;
 	}
 	
 	public static void setAuthor(String name){
-		String _uddiURL   = "http://localhost:9090" ;
-		String CA_WS_NAME = "CertificateAuthorityWS";
+		String _uddiURL   = "CertificateAuthorityWS" ;
+		String CA_WS_NAME = "http://localhost:9090";
 		UDDINaming _uddiNaming;
 		String endpointAddr = "";
 		CAClient ca_ws = null;
