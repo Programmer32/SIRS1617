@@ -9,6 +9,9 @@
 			<handler-class>example.ws.handler.AuthenticationHandler</handler-class>
 		</handler>
 		<handler>
+			<handler-class>example.ws.handler.FailTestsHandler</handler-class>
+		</handler>		
+		<handler>
 			<handler-class>example.ws.handler.LoggingHandler</handler-class>
 		</handler>
 	</handler-chain>
