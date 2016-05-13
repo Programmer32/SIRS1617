@@ -43,8 +43,8 @@ public class BrokerManager {
 		
 	}
 	
-	private static final int TIMEOUT = 500;
-	private static final int WAITING_TIME = new Double(TIMEOUT * 1.1).intValue();
+	private static final int TIMEOUT = 50;
+	private static final int WAITING_TIME = TIMEOUT * 5;
 	
 	private Map<String, BrokerClient> _brokerSlaves;
 	
@@ -354,9 +354,7 @@ public class BrokerManager {
 		        	accepted = true;
 		        	
 		        	//Needs to update all slave brokers
-		        	for(String s : getInstance()._brokerSlaves.keySet()){
-		        		//getInstance()._brokerSlaves.get(s).updateJob(id, transport);
-		        	}
+		        	updateSlavesTransport(j.getJobIdentifier(), transport);
 		        	break;
 		    	}
 			} catch (BadJobFault_Exception | JAXRException e) {
@@ -364,7 +362,6 @@ public class BrokerManager {
 				//e.printStackTrace();
 			}
 
-	    	
 		}
 				
 		//For all the other reject the job
@@ -435,6 +432,27 @@ public class BrokerManager {
 	}
 	
 	public List<TransportView> listTransports(){
+		Dialog.IO().println("");
+		Dialog.IO().println("");
+		Dialog.IO().println("");
+		Dialog.IO().println("");
+		Dialog.IO().println("");
+		Dialog.IO().magent();
+		for(String s: _ids.keySet()){
+			IDConverter v = _ids.get(s);
+			Dialog.IO().println(s + ": " + v._companyName + " " + v._id);
+		}
+		Dialog.IO().println("");
+		Dialog.IO().println("");
+		for(String s: _transports.keySet()){
+			TransportView v = _transports.get(s);
+			Dialog.IO().println(s + ": " + v.getId() + " " + v.getTransporterCompany());
+		}
+		
+		Dialog.IO().reset();
+		Dialog.IO().println("");
+		Dialog.IO().println("");
+		Dialog.IO().println("");
 		Dialog.IO().debug("listTransports", "Listing transports. There are " + _transports.size() + " jobs");
     	List<TransportView> list = new ArrayList<TransportView>();
     	for(TransportView transport : _transports.values()){
@@ -485,6 +503,19 @@ public class BrokerManager {
     	return list;
 	}
 	
+	public void updateSlavesTransport(String id, TransportView transport){
+		for(String s : getInstance()._brokerSlaves.keySet()){
+    		getInstance()._brokerSlaves.get(s).updateJob(id, transport);
+    		Dialog.IO().println(id + " " + transport.getId());
+    	}
+	}
+	public void updateSlaves(){
+		for(String s : _ids.keySet()){
+			updateSlavesTransport(_ids.get(s)._id, _transports.get(s));
+//			IDConverter v = _ids.get(s);
+			Dialog.IO().println(s + ": " + _ids.get(s)._companyName + " " + _ids.get(s)._id);
+		}
+	}
 	/**
 	 * This method clears the transports hash map
 	 */
@@ -495,8 +526,8 @@ public class BrokerManager {
 	}
 	
 	public void updateJob(String id, TransportView transport){
-		getInstance()._ids.put(id, new IDConverter(transport.getTransporterCompany(), transport.getId()));
-		getInstance()._transports.put(id, transport); 
+		getInstance()._ids.put(transport.getId(), new IDConverter(id,transport.getTransporterCompany()));
+		getInstance()._transports.put(transport.getId(), transport); 
     	Dialog.IO().debug("updateJob", "Job is being updated by Master Broker");
     }
 
@@ -508,6 +539,9 @@ public class BrokerManager {
 			Dialog.IO().debug("addSlave", "Slave not added with endpoind: " + endpoint);
 		}
 		Dialog.IO().debug("addSlave", "Slave added with endpoind: " + endpoint);
+		Dialog.IO().debug("addSlave", "Updating slaves");
+		updateSlaves();
+		Dialog.IO().debug("addSlave", "Slaves updated");
     }
 	
 	public void removeSlave(String endpoint){
@@ -518,6 +552,7 @@ public class BrokerManager {
 	
 	public void pingSlave(int e){
 		Dialog.IO().debug("pingSlave", "Master just pinged me. It's still alive");
+		if(getInstance()._timerSlave != null)
 		getInstance()._timerSlave.cancel();
 		getInstance()._timerSlave = new Timer();
 		getInstance()._timerSlave.schedule(new BecomeMaster(),  BrokerManager.WAITING_TIME);
@@ -550,10 +585,11 @@ public class BrokerManager {
 						c.pingSlave(0);
 					}catch(WebServiceException e){
 						getInstance()._brokerSlaves.remove(s);
+					}catch(Exception e){
+						getInstance()._brokerSlaves.remove(s);
 					}
 				}
 			}
-			//TODO
 		}
 	}
     
