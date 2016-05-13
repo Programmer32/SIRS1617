@@ -86,4 +86,27 @@ mvn exec:java
 ```
 
 -------------------------------------------------------------------------------
+
+### Serviço CA
+
+[1] Construir e executar **servidor**
+
+```
+cd CA-ws
+mvn clean install
+mvn package
+mvn exec:java
+```
+
+[2] Construir e executar **cliente**
+
+```
+cd CA-ws-cli
+mvn clean install
+mvn package
+mvn exec:java
+```
+
+-------------------------------------------------------------------------------
+
 **FIM**
