@@ -23,7 +23,7 @@ public class BrokerClient {
 	private BrokerService _client;
 	private BrokerPortType _port;
 	private BindingProvider _bindingProvider;
-	
+	private static final int _TRIES = 50;
 	public BrokerClient(String uddiURL, String wsName) throws BrokerClientException {
 		_uddiURL = uddiURL;
 		_wsName = wsName;
@@ -86,53 +86,121 @@ public class BrokerClient {
 	}
 	
 	public String ping(String name){
-		try{
-			return _port.ping(name);
-		}catch(Exception e){
-			try {
-				establishConnection();
-			} catch (BrokerClientException e1) {}
-			return _port.ping(name);
+		for(int i = 0; i < _TRIES; i++){
+			try{
+				return _port.ping(name);
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
+				try {
+					establishConnection();
+				} catch (BrokerClientException e1) {
+					//This shouldn't happen
+				}
+			}
 		}
+		return null;
 	}
 	
 	public String requestTransport(String origin, String destination, int price) throws InvalidPriceFault_Exception, UnavailableTransportFault_Exception, UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception{
-		try{
-			return _port.requestTransport(origin, destination, price);
-		}catch(Exception e){
-			try {
-				establishConnection();
-			} catch (BrokerClientException e1) {}
-			return _port.requestTransport(origin, destination, price);
+		for(int i = 0; i < _TRIES; i++){
+			try{
+				return _port.requestTransport(origin, destination, price);
+				
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
+				try {
+					establishConnection();
+				} catch (BrokerClientException e1) {
+					//This shouldn't happen
+				}
+			}
 		}
+		return null;
 	}
 	
 	public TransportView viewTransport(String id) throws UnknownTransportFault_Exception{
-		return _port.viewTransport(id);
+		for(int i = 0; i < _TRIES; i++){
+			try{
+				return _port.viewTransport(id);
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
+				try {
+					establishConnection();
+				} catch (BrokerClientException e1) {
+					//This shouldn't happen
+				}
+			}
+		}
+		return null;
 	}
 	public List<TransportView> listTransports(){
-		try{
-			return _port.listTransports();
-		}catch(Exception e){
-			try {
-				establishConnection();
-			} catch (BrokerClientException e1) {}
-			return _port.listTransports();
+		for(int i = 0; i < _TRIES; i++){
+			try{
+				return _port.listTransports();
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
+				try {
+					establishConnection();
+				} catch (BrokerClientException e1) {
+					//This shouldn't happen
+				}
+			}
 		}
+		return null;
 	}
 	public void clearTransports(){
-		_port.clearTransports();
+		for(int i = 0; i < _TRIES; i++){
+			try{
+				_port.clearTransports();
+				return;
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
+				try {
+					establishConnection();
+				} catch (BrokerClientException e1) {
+					//This shouldn't happen
+				}
+			}
+		}
 	}
 	
 	public void addSlave(String endpoint){
-		_port.addSlave(endpoint);
+		for(int i = 0; i < _TRIES; i++){
+			try{
+				_port.addSlave(endpoint);
+				return;
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
+				try {
+					establishConnection();
+				} catch (BrokerClientException e1) {
+					//This shouldn't happen
+				}
+			}
+		}
 	}
 	
 	public void updateJob(String id, TransportView status){
-		_port.updateJob(id, status);
+		for(int i = 0; i < _TRIES; i++){
+			try{
+				_port.updateJob(id, status);
+				return;
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
+				try {
+					establishConnection();
+				} catch (BrokerClientException e1) {
+					//This shouldn't happen
+				}
+			}
+		}
 	}
 	
 	public void pingSlave(int a){
-		_port.pingSlave(a);
+		for(int i = 0; i < _TRIES; i++){
+			try{
+				_port.pingSlave(a);
+				return;
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
+				try {
+					establishConnection();
+				} catch (BrokerClientException e1) {
+					//This shouldn't happen
+				}
+			}
+		}
 	}
 }

@@ -11,9 +11,9 @@ import org.junit.Test;
 
 /**
  *  Unit Test example
- *  
+ *
  *  Invoked by Maven in the "test" life-cycle phase
- *  If necessary, should invoke "mock" remote servers 
+ *  If necessary, should invoke "mock" remote servers
  */
 public class RequestJobTest {
 
@@ -31,7 +31,7 @@ public class RequestJobTest {
 	public static void oneTimeTearDown() {
 
 	}
-	
+
 	// members
 
 	// Initialisation and clean-up for each test
@@ -68,9 +68,9 @@ public class RequestJobTest {
 		assertNull(transporter.requestJob("Lisboa", "Madrid", 0));
 	}
 
-	@Test
+   @Test(expected = BadPriceFault_Exception.class)
 	public void negativePriceTest() throws BadLocationFault_Exception, BadPriceFault_Exception {
-		assertNull(transporter.requestJob("Lisboa", "Lisboa", -1));
+		transporter.requestJob("Lisboa", "Lisboa", -1);
 	}
 	@Test
 	public void overPricedTest() throws BadLocationFault_Exception, BadPriceFault_Exception {
@@ -89,7 +89,7 @@ public class RequestJobTest {
 		int price = job.getJobPrice();
 		boolean cond = price < 9;
 		assert(cond);
-	}	
+	}
 	@Test
 	public void price2Test() throws BadLocationFault_Exception, BadPriceFault_Exception {
 		JobView job = transporter.requestJob("Lisboa", "Lisboa", 2);
