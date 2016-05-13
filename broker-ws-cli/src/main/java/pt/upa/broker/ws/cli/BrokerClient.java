@@ -89,7 +89,7 @@ public class BrokerClient {
 		for(int i = 0; i < _TRIES; i++){
 			try{
 				return _port.ping(name);
-			}catch(Exception e){
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
 				try {
 					establishConnection();
 				} catch (BrokerClientException e1) {
@@ -105,7 +105,7 @@ public class BrokerClient {
 			try{
 				return _port.requestTransport(origin, destination, price);
 				
-			}catch(Exception e){
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
 				try {
 					establishConnection();
 				} catch (BrokerClientException e1) {
@@ -120,7 +120,7 @@ public class BrokerClient {
 		for(int i = 0; i < _TRIES; i++){
 			try{
 				return _port.viewTransport(id);
-			}catch(Exception e){
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
 				try {
 					establishConnection();
 				} catch (BrokerClientException e1) {
@@ -134,7 +134,7 @@ public class BrokerClient {
 		for(int i = 0; i < _TRIES; i++){
 			try{
 				return _port.listTransports();
-			}catch(Exception e){
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
 				try {
 					establishConnection();
 				} catch (BrokerClientException e1) {
@@ -149,7 +149,7 @@ public class BrokerClient {
 			try{
 				_port.clearTransports();
 				return;
-			}catch(Exception e){
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
 				try {
 					establishConnection();
 				} catch (BrokerClientException e1) {
@@ -164,7 +164,7 @@ public class BrokerClient {
 			try{
 				_port.addSlave(endpoint);
 				return;
-			}catch(Exception e){
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
 				try {
 					establishConnection();
 				} catch (BrokerClientException e1) {
@@ -179,7 +179,7 @@ public class BrokerClient {
 			try{
 				_port.updateJob(id, status);
 				return;
-			}catch(Exception e){
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
 				try {
 					establishConnection();
 				} catch (BrokerClientException e1) {
@@ -194,7 +194,7 @@ public class BrokerClient {
 			try{
 				_port.pingSlave(a);
 				return;
-			}catch(Exception e){
+			}catch(com.sun.xml.ws.client.ClientTransportException e){
 				try {
 					establishConnection();
 				} catch (BrokerClientException e1) {
