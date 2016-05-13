@@ -97,14 +97,28 @@ public class BrokerClient {
 	}
 	
 	public String requestTransport(String origin, String destination, int price) throws InvalidPriceFault_Exception, UnavailableTransportFault_Exception, UnavailableTransportPriceFault_Exception, UnknownLocationFault_Exception{
-		return _port.requestTransport(origin, destination, price);
+		try{
+			return _port.requestTransport(origin, destination, price);
+		}catch(Exception e){
+			try {
+				establishConnection();
+			} catch (BrokerClientException e1) {}
+			return _port.requestTransport(origin, destination, price);
+		}
 	}
 	
 	public TransportView viewTransport(String id) throws UnknownTransportFault_Exception{
 		return _port.viewTransport(id);
 	}
 	public List<TransportView> listTransports(){
-		return _port.listTransports();
+		try{
+			return _port.listTransports();
+		}catch(Exception e){
+			try {
+				establishConnection();
+			} catch (BrokerClientException e1) {}
+			return _port.listTransports();
+		}
 	}
 	public void clearTransports(){
 		_port.clearTransports();

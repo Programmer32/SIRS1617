@@ -495,8 +495,9 @@ public class BrokerManager {
 	}
 	
 	public void updateJob(String id, TransportView transport){
+		getInstance()._ids.put(id, new IDConverter(transport.getTransporterCompany(), transport.getId()));
+		getInstance()._transports.put(id, transport); 
     	Dialog.IO().debug("updateJob", "Job is being updated by Master Broker");
-    	//TODO
     }
 
 	public void addSlave(String endpoint){
