@@ -7,3 +7,7 @@
 .project
 .settings
 *.key
+CA-ws/keys_*
+*.cer
+*.jks
+*.pem.txt

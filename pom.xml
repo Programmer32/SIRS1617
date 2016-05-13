@@ -10,6 +10,7 @@
   <modules>
 	<module>ui</module>
 	<module>uddi-naming</module>
+	<module>CA-ws</module>
 	<module>ws-handlers</module>
 	<module>transporter-ws</module>
 	<module>transporter-ws-cli</module>
