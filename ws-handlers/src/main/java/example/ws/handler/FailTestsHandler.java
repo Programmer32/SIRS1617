@@ -2,34 +2,9 @@
 package example.ws.handler;
 
 
-import static org.junit.Assert.assertNotNull;
-
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.InvalidKeyException;
-import java.security.KeyFactory;
-import java.security.KeyStore;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SignatureException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.X509Certificate;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.time.Instant;
 import java.util.Iterator;
 import java.util.Set;
 
-import javax.crypto.Cipher;
 import javax.xml.namespace.QName;
 import javax.xml.soap.Name;
 import javax.xml.soap.SOAPBody;
@@ -37,20 +12,13 @@ import javax.xml.soap.SOAPElement;
 import javax.xml.soap.SOAPEnvelope;
 import javax.xml.soap.SOAPException;
 import javax.xml.soap.SOAPHeader;
-import javax.xml.soap.SOAPHeaderElement;
 import javax.xml.soap.SOAPMessage;
 import javax.xml.soap.SOAPPart;
 import javax.xml.ws.handler.MessageContext;
 import javax.xml.ws.handler.soap.SOAPHandler;
 import javax.xml.ws.handler.soap.SOAPMessageContext;
 
-import org.junit.Test;
-
-import pt.ulisboa.tecnico.sdis.ws.uddi.UDDINaming;
-import pt.upa.ca.ws.cli.CAClient;
-import pt.upa.ca.ws.EntityNotFoundException_Exception;
 import pt.upa.ui.Dialog;
-import sun.misc.BASE64Decoder;
 import sun.misc.BASE64Encoder;
 
 @SuppressWarnings("restriction")
@@ -86,10 +54,10 @@ public class FailTestsHandler implements SOAPHandler<SOAPMessageContext> {
 	public boolean handleMessage(SOAPMessageContext smc) {
 		Boolean outbound = (Boolean) smc.get(MessageContext.MESSAGE_OUTBOUND_PROPERTY);
 
+		try {
 		if (outbound) {
 			switch (TEST_MODE) {
 			case 0:
-				
 				break;
 			case 1:
 				tamper_changeNounce(smc);
@@ -98,7 +66,7 @@ public class FailTestsHandler implements SOAPHandler<SOAPMessageContext> {
 				tamper_changeValidDigestExpiredNounce(smc);
 				break;
 			case 3:
-				tamper_changeAuthor(smc);
+					tamper_changeAuthor(smc);
 				break;
 			case 4:
 				tamper_changeDigest(smc);
@@ -106,12 +74,15 @@ public class FailTestsHandler implements SOAPHandler<SOAPMessageContext> {
 			case 5:
 				tamper_changeBodyContent(smc);
 				break;
-
 			default:
 				break;
 			}
 		} else {
 			//Only trying to tamper with outbound messages
+		}
+		} catch (SOAPException e) {
+			System.out.println("Unexpected Exception");
+			e.printStackTrace();
 		}
 		return true;
 	}
@@ -122,31 +93,105 @@ public class FailTestsHandler implements SOAPHandler<SOAPMessageContext> {
 	// nothing to clean up
 	public void close(MessageContext messageContext) {}
 
-
-	private static String bytes2String(byte[] message){
-		BASE64Encoder encoder = new BASE64Encoder();
-		return encoder.encode(message);
-	}
 	
-	private void tamper_changeNounce(SOAPMessageContext smc){
-		System.out.println("\u001B[33,1m" + TEST_MODE +"\u001B[0m" );
+	private void tamper_changeNounce(SOAPMessageContext smc) throws SOAPException{
+		SOAPMessage msg = smc.getMessage();
+		SOAPPart sPart = msg.getSOAPPart();
+		SOAPEnvelope sEnvelope = sPart.getEnvelope();
+		SOAPHeader sHeader = sEnvelope.getHeader();
+
+
+		Name nameNounce = sEnvelope.createName(NOUNCE_HEADER, NOUNCE_PREFIX, NOUNCE_NAMESPACE);
+		SOAPElement elementNounce = getElement(sHeader,nameNounce);
+		
+		String digestOld = elementNounce.getTextContent();
+		String input  = digestOld;
+		char c[]      = input.toCharArray();
+		if(c[0] < 95)
+			c[0] += 1;
+		else
+			c[0] -= 1;
+		String output = new String(c);
+		
+		elementNounce.setTextContent(output);
+		
+		msg.saveChanges();		
+	}
+	private void tamper_changeValidDigestExpiredNounce(SOAPMessageContext smc) throws SOAPException{
+		SOAPMessage msg = smc.getMessage();
+		SOAPPart sPart = msg.getSOAPPart();
+		SOAPEnvelope sEnvelope = sPart.getEnvelope();
+		SOAPHeader sHeader = sEnvelope.getHeader();
+
+		Name nameNounce = sEnvelope.createName(NOUNCE_HEADER, NOUNCE_PREFIX, NOUNCE_NAMESPACE);
+		SOAPElement elementNounce = getElement(sHeader,nameNounce);
+		
+		String nounce = elementNounce.getTextContent();
+		int separator = nounce.indexOf(NOUNCE_DELIMITER);
+		String expireDateStr = nounce.substring(0, separator);
+		long  expireDateLong = Long.parseLong(expireDateStr, 10);
+		expireDateLong -= (AuthenticationHandler.DIFFERENCE_SECONDS *2) * 1000;
+		
+		String counter = nounce.substring(separator);
+		elementNounce.setTextContent(expireDateLong + counter);
+		
+		msg.saveChanges();
+	}
+	private void tamper_changeAuthor(SOAPMessageContext smc) throws SOAPException{
+		SOAPMessage msg = smc.getMessage();
+		SOAPPart sPart = msg.getSOAPPart();
+		SOAPEnvelope sEnvelope = sPart.getEnvelope();
+		SOAPHeader sHeader = sEnvelope.getHeader();
+
+		Name nameAuthor = sEnvelope.createName(AUTHOR_HEADER, AUTHOR_PREFIX, AUTHOR_NAMESPACE);
+		SOAPElement elementAuthor = getElement(sHeader,nameAuthor);
+		
+		elementAuthor.setTextContent("UpaTransporter1");
+		
+		msg.saveChanges();
+	}
+	private void tamper_changeDigest(SOAPMessageContext smc) throws SOAPException{
+		SOAPMessage msg = smc.getMessage();
+		SOAPPart sPart = msg.getSOAPPart();
+		SOAPEnvelope sEnvelope = sPart.getEnvelope();
+		SOAPHeader sHeader = sEnvelope.getHeader();
+
+//		// get Digest element
+		Name nameDigest = sEnvelope.createName(DIGEST_HEADER, DIGEST_PREFIX, DIGEST_NAMESPACE);
+		SOAPElement elementDigest = getElement(sHeader,nameDigest);
+		
+		String digestOld = elementDigest.getTextContent();
+		String input  = digestOld;
+		char c[]      = input.toCharArray();
+		if(c[0] < 95)
+			c[0] += 1;
+		else
+			c[0] -= 1;
+		String output = new String(c);
+		
+		elementDigest.setTextContent(output);
+		
+		msg.saveChanges();
 		
 	}
-	private void tamper_changeValidDigestExpiredNounce(SOAPMessageContext smc){
-		System.out.println("\u001B[33,1m" + TEST_MODE +"\u001B[0m" );
+	private void tamper_changeBodyContent(SOAPMessageContext smc) throws SOAPException{
+		SOAPMessage msg = smc.getMessage();
+		SOAPPart sPart = msg.getSOAPPart();
+		SOAPEnvelope sEnvelope = sPart.getEnvelope();
+		SOAPBody sBody = sEnvelope.getBody();
+
+		String digestOld = sBody.getTextContent();
+		String input  = digestOld;
+		char c[]      = input.toCharArray();
+		if(c[0] < 95)
+			c[0] += 1;
+		else
+			c[0] -= 1;
+		String output = new String(c);
 		
-	}
-	private void tamper_changeAuthor(SOAPMessageContext smc){
-		System.out.println("\u001B[33,1m" + TEST_MODE +"\u001B[0m" );
+		sBody.setTextContent(output);
 		
-	}
-	private void tamper_changeDigest(SOAPMessageContext smc){
-		System.out.println("\u001B[33,1m" + TEST_MODE +"\u001B[0m" );
-		
-	}
-	private void tamper_changeBodyContent(SOAPMessageContext smc){
-		System.out.println("\u001B[33,1m" + TEST_MODE +"\u001B[0m" );
-		
+		msg.saveChanges();		
 	}
 	
 	private SOAPElement getElement(SOAPElement sElement, Name name){
