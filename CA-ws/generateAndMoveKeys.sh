@@ -1,10 +1,17 @@
 #!/bin/bash
+
+echo -e "\e[33;1mCleaning Up\e[0m"
+rm -rv keys_*
+
+echo -e "\e[33;1mGenerating Keys\e[0m"
 ./gen-ca-servers-keys.sh UpaBroker UpaTransporter{1..9} TransporterClient
 
-cp -v keys_*/ca/ca-certificate.pem.txt ./src/main/resources/
+
+echo -e "\e[33;1mInner Deploy\e[0m"
+cp -vf keys_*/ca/ca-certificate.pem.txt ./src/main/resources/
 for certificate in keys_*/*/*.cer
 do
-	cp -v $certificate ./src/main/resources/
+	cp -vf $certificate ./src/main/resources/
 done
 
 cd keys_*
@@ -12,13 +19,16 @@ Resources=src/main/resources/
 
 
 Folder=TransporterClient
-(cd $Folder; cp -v $Folder.jks ../../../transporter-ws-cli/$Resources )
+echo -e "\e[33;1mDeploy $Folder\e[0m"
+(cd $Folder; cp -vf $Folder.jks ../../../transporter-ws-cli/$Resources )
 Folder=UpaBroker
-(cd $Folder; cp -v $Folder.jks ../../../broker-ws/$Resources )
+echo -e "\e[33;1mDeploy $Folder\e[0m"
+(cd $Folder; cp -vf $Folder.jks ../../../broker-ws/$Resources )
 Folder=UpaTransporter*
 for Folder in UpaTransporter*
 do
-	(cd $Folder; cp -v $Folder*.jks ../../../transporter-ws/$Resources )
+	echo -e "\e[33;1mDeploy $Folder\e[0m"
+	(cd $Folder; cp -vf $Folder*.jks ../../../transporter-ws/$Resources )
 done
 cd ..
 
