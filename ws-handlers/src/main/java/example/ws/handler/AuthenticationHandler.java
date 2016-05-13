@@ -127,10 +127,14 @@ public class AuthenticationHandler implements SOAPHandler<SOAPMessageContext> {
 
 	}
 
+//	AuthenticationHandler.setCA_WS_NAME()
+//	AuthenticationHandler.setUDDI_URL()
 	public static void setUDDI_URL(String url){
+		Dialog.IO().println("Changing handler UDDI URL: " + url); //TODO
 		UDDI_URL = url;
 	}
 	public static void setCA_WS_NAME(String name){
+		Dialog.IO().println("Changing handler CA ws name: " + name); //TODO 
 		CA_WS_NAME = name;
 	}
 

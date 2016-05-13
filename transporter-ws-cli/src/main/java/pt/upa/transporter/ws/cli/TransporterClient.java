@@ -76,6 +76,7 @@ public class TransporterClient {
 		establishConnection();
 
 		AuthenticationHandler.setAuthorIfNull("TransporterClient");
+		AuthenticationHandler.setUDDI_URL(uddiURL);
 		Dialog.IO().debug("TransporterClient", "TransporterClient created");
 	}
 	

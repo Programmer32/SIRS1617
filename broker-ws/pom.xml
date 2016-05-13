@@ -24,7 +24,7 @@
 		<mainclass>pt.upa.broker.BrokerMain</mainclass>
 
 		<ca.ws>CertificateAuthorityWS</ca.ws>
-		
+
 		<ws.hostname>localhost</ws.hostname>
 		<ws.port>8080</ws.port>
 
@@ -141,6 +141,7 @@
 						<argument>${uddi.url}</argument>
 						<argument>${ws.name}</argument>
 						<argument>${ws.url}</argument>
+						<argument>${ca.ws}</argument>
 					</arguments>
 				</configuration>
 			</plugin>

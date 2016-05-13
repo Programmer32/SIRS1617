@@ -124,9 +124,12 @@ public class TransporterManager {
 		if(getInstance()._endpoint != null) throw new TransporterManagerException("EndpointManager is already defined");
 		getInstance()._endpoint = new EndpointManager(getInstance()._uddiURL);
 		Dialog.IO().debug("TransporterManager", "EndpointManager Created");
+	
+		AuthenticationHandler.setUDDI_URL(uddiURL);
 		
 		Dialog.IO().debug("TransporterManager", "Created instance");
 	}
+	
 	
 	/**
 	 * 

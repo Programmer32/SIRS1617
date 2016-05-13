@@ -1,6 +1,7 @@
 package pt.upa.transporter;
 import java.util.Scanner;
 
+import example.ws.handler.AuthenticationHandler;
 import pt.upa.transporter.ws.JobView;
 import pt.upa.transporter.ws.cli.TransporterClient;
 import pt.upa.ui.Dialog;
@@ -10,10 +11,14 @@ public class TransporterClientApplication {
 	public static void main(String[] args) throws Exception {
 		String _uddiURL = args[0];
 		String _wsName = args[1];
+		String _caWsName = args[3];
 		System.out.println(TransporterClientApplication.class.getSimpleName() + " starting...");
 		System.out.println("UDDI URL: " + _uddiURL);
 		System.out.println("WS NAME:  " + _wsName);
 
+		AuthenticationHandler.setUDDI_URL(_uddiURL);
+		AuthenticationHandler.setCA_WS_NAME(_caWsName);
+		
 		try {
 			String command = new String();
 			Scanner input = new Scanner(System.in);

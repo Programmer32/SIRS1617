@@ -3,6 +3,8 @@ import pt.upa.transporter.ws.TransporterManager;
 import pt.upa.ui.Dialog;
 import javax.xml.registry.JAXRException;
 
+import example.ws.handler.AuthenticationHandler;
+
 public class TransporterMain {
 
 	public static void main(String[] args) throws Exception {
@@ -18,6 +20,10 @@ public class TransporterMain {
 		try{
 			TransporterManager.config(args[0], args[1], args[2], Integer.parseInt(args[3]));
 			TransporterManager.publish();
+
+			AuthenticationHandler.setUDDI_URL(args[0]);
+			AuthenticationHandler.setCA_WS_NAME(args[4]);
+			
 			Dialog.IO().println("Waiting for connections");
 			Dialog.IO().println("Press enter to shutdown");
 			Dialog.IO().readLine();
