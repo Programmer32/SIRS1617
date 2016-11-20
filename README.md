@@ -3,8 +3,11 @@
 Group 08 - Alameda Campus
 
 75154	Jorge Miguel Tavares Veiga	jorgeveiga@tecnico.ulisboa.pt
+
 75741	João André Dias Figueiredo	j.andre.dias@tecnico.ulisboa.pt
+
 78865	Miguel Antão Pereira Amaral	miguel.p.amaral@tecnico.ulisboa.pt
+
 
 Repositório:
 [Programmer32/SIRS1617](https://github.com/Programmer32/SIRS1617/)
