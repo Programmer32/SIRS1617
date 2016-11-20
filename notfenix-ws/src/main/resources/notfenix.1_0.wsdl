@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions
+    xmlns="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/" 
+    xmlns:wsam="http://www.w3.org/2007/05/addressing/metadata"
+    xmlns:tns="http://ws.sirs1617.andred.pt/"
+    targetNamespace="http://ws.sirs1617.andred.pt/" 
+    name="NotFenixWebService">
+
+    <!-- Data type definitions -->
+    <types>
+        <xs:schema version="1.0"
+        	targetNamespace="http://ws.sirs1617.andred.pt/">
+            <xs:element name="ping">
+            	<xs:complexType>
+            		<xs:sequence>
+
+            			<xs:element name="in" type="xs:string"></xs:element>
+            		</xs:sequence>
+            	</xs:complexType>
+            </xs:element>
+            <xs:element name="pingResponse">
+            	<xs:complexType>
+            		<xs:sequence>
+
+            			<xs:element name="out" type="xs:string"></xs:element>
+            		</xs:sequence>
+            	</xs:complexType>
+            </xs:element>
+            <xs:element name="login">
+            	<xs:complexType>
+            		<xs:sequence>
+
+            			<xs:element name="in" type="xs:string"></xs:element>
+            		</xs:sequence>
+            	</xs:complexType>
+            </xs:element>
+            <xs:element name="loginResponse">
+            	<xs:complexType>
+            		<xs:sequence>
+
+            			<xs:element name="success" type="xs:boolean"></xs:element>
+            		</xs:sequence>
+            	</xs:complexType>
+            </xs:element>
+        </xs:schema>
+	</types>
+
+    <message name="pingRequest">
+    	<part name="parameters" element="tns:ping"></part>
+    </message>
+    <message name="pingResponse">
+    	<part name="parameters" element="tns:pingResponse"></part>
+    </message>
+    <message name="loginRequest">
+    	<part name="parameters" element="tns:login"></part>
+    </message>
+    <message name="loginResponse">
+    	<part name="parameters" element="tns:loginResponse"></part>
+    </message>
+    
+    
+    <portType name="NotFenixPortType">
+        <operation name="ping">
+        	<input
+        		wsam:Action="http://ws.sirs1617.andred.pt/NotFenixPort/pingRequest"
+        		message="tns:pingRequest"></input>
+        	<output
+        		wsam:Action="http://ws.sirs1617.andred.pt/NotFenixPort/pingResponse"
+        		message="tns:pingResponse"></output>
+        </operation>
+        <operation name="login">
+        	<input
+        		wsam:Action="http://ws.sirs1617.andred.pt/NotFenixPort/loginRequest"
+        		message="tns:loginRequest"></input>
+        	<output
+        		wsam:Action="http://ws.sirs1617.andred.pt/NotFenixPort/loginResponse"
+        		message="tns:loginResponse"></output>
+        </operation>
+    </portType>
+
+    <!-- SOAP/HTTP Binding -->
+    <binding name="NotFenixPortSoapHttpBinding" type="tns:NotFenixPortType">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http"
+            style="document" />
+        <operation name="ping">
+            <soap:operation soapAction="" />
+            <input>
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
+        </operation>
+		<operation name="login">
+            <soap:operation soapAction="" />
+            <input>
+                <soap:body use="literal" />
+                <soap:body use="literal" />
+            </input>
+            <output>
+                <soap:body use="literal" />
+            </output>
+        </operation>
+    </binding>
+
+    <service name="NotFenixService">
+        <port name="NotFenixPort" binding="tns:NotFenixPortSoapHttpBinding">
+            <soap:address location="http://host:port/notfenix-ws/endpoint" />
+        </port>
+    </service>
+
+</definitions>

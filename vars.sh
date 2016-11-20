@@ -1,3 +1,3 @@
-export UPA_DEBUG=true
-export UPA_TRACE=true
-export UPA_SOAP=true
+export NOTFENIX_DEBUG=true
+export NOTFENIX_TRACE=true
+export NOTFENIX_SOAP=true

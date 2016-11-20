@@ -1,20 +1,17 @@
-# Projeto de Sistemas Distribuídos 2015-2016 #
+# Network and Computer Security Project 2016-2017 #
 
-Grupo de SD 03 - Campus Alameda
+Group 08 - Alameda Campus
 
-Pedro Bucho 69537 pedro.m.bucho@tecnico.ulisboa.pt
-
-João Figueiredo 75741 j.andre.dias@tecnico.ulisboa.pt
-
-Miguel Amaral 78865 miguel.p.amaral@tecnico.ulisboa.pt
-
+75154	Jorge Miguel Tavares Veiga	jorgeveiga@tecnico.ulisboa.pt
+75741	João André Dias Figueiredo	j.andre.dias@tecnico.ulisboa.pt
+78865	Miguel Antão Pereira Amaral	miguel.p.amaral@tecnico.ulisboa.pt
 
 Repositório:
-[tecnico-distsys/A_03-project](https://github.com/tecnico-distsys/A_03-project/)
+[Programmer32/SIRS1617](https://github.com/Programmer32/SIRS1617/)
 
 -------------------------------------------------------------------------------
 
-## Instruções de instalação 
+## Install instructions
 
 On project root directory:
 ```
@@ -24,15 +21,19 @@ mvn install
 
 ### Ambiente
 
-1. Iniciar Linux
-2. Iniciar servidores de apoio  
+1. Boot Linux
+
+2. Start support servers
    JUDDI:  
    `$CATALINA_HOME/bin/startup.sh`
-3. Criar pasta temporária  
+
+3. Create temporary directory 
    `cd $(mktemp -d)`
-4. Obter código fonte do projeto (versão entregue)  
-   `git clone git@github.com:tecnico-distsys/A_03-project.git -b SD_1`
-5. Instalar módulos de bibliotecas auxiliares  
+
+4. Clone project source code
+   `git clone https://github.com/Programmer32/SIRS1617.git`
+
+5. Install used library modules
    `cd uddi-naming`  
    `mvn clean install`  
    `cd ..`  
@@ -42,44 +43,21 @@ mvn install
 
 -------------------------------------------------------------------------------
 
-### Serviço TRANSPORTER
+### NotFenix Service 
 
-[1] Construir e executar **servidor**
+[1] Build and Run **server**
 
 ```
-cd transporter-ws
+cd notfenix-ws
 mvn clean install
 mvn package
 mvn exec:java
 ```
 
-[2] Construir **cliente** e executar testes
+[2] Build **client**  and run tests
 
 ```
-cd transporter-ws-cli
-mvn clean install
-mvn package
-mvn exec:java
-
-```
-
--------------------------------------------------------------------------------
-
-### Serviço BROKER
-
-[1] Construir e executar **servidor**
-
-```
-cd broker-ws
-mvn clean install
-mvn package
-mvn exec:java
-```
-
-[2] Construir **cliente** e executar testes
-
-```
-cd broker-ws-cli
+cd notfenix-ws-cli
 mvn clean install
 mvn package
 mvn exec:java
@@ -87,9 +65,9 @@ mvn exec:java
 
 -------------------------------------------------------------------------------
 
-### Serviço CA
+### CA Service
 
-[1] Construir e executar **servidor**
+[1] Build and run  **server**
 
 ```
 cd CA-ws
@@ -98,7 +76,7 @@ mvn package
 mvn exec:java
 ```
 
-[2] Construir e executar **cliente**
+[2] Build and run  **client**
 
 ```
 cd CA-ws-cli
@@ -109,4 +87,4 @@ mvn exec:java
 
 -------------------------------------------------------------------------------
 
-**FIM**
+**END**
