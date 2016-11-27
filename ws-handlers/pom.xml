@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<!-- http://maven.apache.org/pom.html#Quick_Overview -->
 
-	<groupId>example</groupId>
+	<groupId>pt.andred.sirs1617</groupId>
 	<artifactId>ws-handlers</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
@@ -30,12 +30,12 @@
 			<version>1.0</version>
 		</dependency>
 		<dependency>
-			<groupId>pt.upa.a03</groupId>
+			<groupId>pt.andred.sirs1617</groupId>
 			<artifactId>ui</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
-			<groupId>pt.upa.a03</groupId>
+			<groupId>pt.andred.sisrs1617</groupId>
 			<artifactId>CA-ws-cli</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>

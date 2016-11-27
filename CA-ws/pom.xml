@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <!-- http://maven.apache.org/pom.html#Quick_Overview -->
 
-    <groupId>pt.upa.a03</groupId>
+    <groupId>pt.andred.sirs1617</groupId>
     <artifactId>CA-ws</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
@@ -38,7 +38,7 @@
             <scope>test</scope>
         </dependency>
 		<dependency>
-			<groupId>example</groupId>
+			<groupId>pt.andred.sirs1617</groupId>
 			<artifactId>ws-handlers</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
